@@ -6,3 +6,4 @@ bil-ui/dist
 main.db
 export.json
 poetry.lock
+api/data
