@@ -22,6 +22,24 @@ app.add_middleware(
 
 db = DBAdaptor("data/")
 
+app.mount("/css", StaticFiles(directory="dist/css"), name="static")
+app.mount("/js", StaticFiles(directory="dist/js"), name="static")
+app.mount("/img", StaticFiles(directory="dist/img"), name="static")
+app.mount("/fonts", StaticFiles(directory="dist/fonts"), name="static")
+
+
+@app.get("/manifest.json")
+async def serve_manifest():
+    with open("dist/manifest.json", "r") as f:
+        return json.loads(f.read())
+
+
+@app.get("/")
+@app.get("/{id}")
+async def root():
+    with open("dist/index.html", "r") as f:
+        return HTMLResponse(f.read())
+
 
 @app.get("/projects")
 async def list_projects():
@@ -39,22 +57,3 @@ async def delete_project(project_id: int):
         return db.delete_project(project_id)
     except ItemNotFoundError:
         raise HTTPException(status_code=404)
-
-
-app.mount("/css", StaticFiles(directory="dist/css"), name="static")
-app.mount("/js", StaticFiles(directory="dist/js"), name="static")
-app.mount("/img", StaticFiles(directory="dist/img"), name="static")
-app.mount("/fonts", StaticFiles(directory="dist/fonts"), name="static")
-
-
-@app.get("/manifest.json")
-async def srvwork():
-    with open("dist/manifest.json", "r") as f:
-        return json.loads(f.read())
-
-
-@app.get("/")
-@app.get("/{id}")
-async def root():
-    with open("dist/index.html", "r") as f:
-        return HTMLResponse(f.read())
