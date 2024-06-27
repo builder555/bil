@@ -11,12 +11,12 @@ class DBAdaptor:
     def _get_project_path(self, project_id: int) -> str:
         return os.path.join(self._base, f"projects/{project_id}")
 
-    def get_projects(self) -> dict[int, Project]:
+    def get_projects(self, include_deleted: bool = False) -> dict[int, Project]:
         projects = {}
         if os.path.exists(self._db_path):
             with open(self._db_path, "r") as f:
                 projects = json.load(f)
-                projects = {int(k): Project(**v) for k, v in projects.items()}
+                projects = {int(k): Project(**v) for k, v in projects.items() if not v["is_deleted"] or include_deleted}
         return projects
 
     def _save_projects(self, projects: dict[int, Project]):
@@ -38,7 +38,7 @@ class DBAdaptor:
         os.system(f"touch {project_path}/payments.json")
 
     def add_project(self, name: str):
-        projects = self.get_projects()
+        projects = self.get_projects(include_deleted=True)
         new_id = self._get_next_id(projects)
         new_project = Project(name=name, id=new_id)
         self._mk_project_dir(new_id)
@@ -52,6 +52,12 @@ class DBAdaptor:
             raise ItemNotFoundError
         projects[project_id].is_deleted = True
         self._save_projects(projects)
+    
+    def get_project(self, project_id: int):
+        projects = self.get_projects()
+        if project_id not in projects:
+            raise ItemNotFoundError
+        return projects[project_id]
 
 
 class ItemNotFoundError(Exception):

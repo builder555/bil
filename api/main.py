@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+from datamodels import ProjectResponse
 from dbfile import DBAdaptor, ItemNotFoundError
 import json
 
@@ -28,6 +29,31 @@ app.mount("/img", StaticFiles(directory="dist/img"), name="static")
 app.mount("/fonts", StaticFiles(directory="dist/fonts"), name="static")
 
 
+
+@app.get("/projects", response_model=list[ProjectResponse])
+async def list_projects():
+    return db.get_projects().values()
+
+
+@app.post("/projects", response_model=None)
+async def add_a_new_project(name: str):
+    db.add_project(name)
+
+
+@app.delete("/projects/{project_id}")
+async def delete_project(project_id: int):
+    try:
+        return db.delete_project(project_id)
+    except ItemNotFoundError:
+        raise HTTPException(status_code=404)
+
+@app.get("/projects/{project_id}")
+async def get_project(project_id: int):
+    try:
+        return db.get_project(project_id)
+    except ItemNotFoundError:
+        raise HTTPException(status_code=404)
+
 @app.get("/manifest.json")
 async def serve_manifest():
     with open("dist/manifest.json", "r") as f:
@@ -39,21 +65,3 @@ async def serve_manifest():
 async def root():
     with open("dist/index.html", "r") as f:
         return HTMLResponse(f.read())
-
-
-@app.get("/projects")
-async def list_projects():
-    return db.get_projects()
-
-
-@app.post("/projects")
-async def add_a_new_project(name: str):
-    return db.add_project(name)
-
-
-@app.delete("/projects/{project_id}")
-async def delete_project(project_id: int):
-    try:
-        return db.delete_project(project_id)
-    except ItemNotFoundError:
-        raise HTTPException(status_code=404)
