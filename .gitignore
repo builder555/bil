@@ -5,3 +5,4 @@ bil-ui/dist
 **/__pycache__
 main.db
 export.json
+poetry.lock
