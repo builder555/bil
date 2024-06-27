@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from datamodels import ProjectResponse
+from datamodels import PaygroupBase, ProjectResponse
 from dbfile import DBAdaptor, ItemNotFoundError
 import json
 
@@ -54,6 +54,9 @@ async def get_project(project_id: int):
     except ItemNotFoundError:
         raise HTTPException(status_code=404)
 
+@app.post("/projects/{project_id}/paygroups")
+async def add_new_paygroup(project_id: int, paygroup: PaygroupBase):
+    db.add_paygroup(project_id, paygroup)
 
 @app.get("/manifest.json")
 async def serve_manifest():
