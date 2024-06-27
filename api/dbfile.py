@@ -1,4 +1,4 @@
-from datamodels import Project
+from datamodels import Project, ProjectEncoder
 import os
 import json
 class DBAdaptor:
@@ -9,21 +9,22 @@ class DBAdaptor:
     def _get_project_path(self, project_id: int) -> str:
         return os.path.join(self._base, f'projects/{project_id}')
 
-    def get_projects(self) -> list[Project]:
-        projects = []
+    def get_projects(self) -> dict[int, Project]:
+        projects = {}
         if os.path.exists(self._db_path):
             with open(self._db_path, 'r') as f:
-                projects = [Project(**p) for p in json.load(f)]
+                projects = json.load(f)
+                projects = {int(k): Project(**v) for k, v in projects.items()}
         return projects
 
-    def _save_projects(self, projects: list[Project]):
+    def _save_projects(self, projects: dict[int, Project]):
         with open(self._db_path, 'w') as f:
-            json.dump([p.model_dump() for p in projects], f)
+            json.dump(projects, f, cls=ProjectEncoder, indent=4)
 
-    def _get_next_id(self, projects: list[Project]) -> int:
+    def _get_next_id(self, projects: dict[int, Project]) -> int:
         if not projects:
             return 1
-        return max([p.id for p in projects]) + 1
+        return max(projects.keys()) + 1
 
     def _mk_project_dir(self, project_id: int):
         project_path = self._get_project_path(project_id)
@@ -40,5 +41,15 @@ class DBAdaptor:
         new_project = Project(name=name, id=new_id)
         self._mk_project_dir(new_id)
         self._mk_project_db(new_id)
-        projects.append(new_project)
+        projects[new_id] = new_project
         self._save_projects(projects)
+
+    def delete_project(self, project_id: int):
+        projects = self.get_projects()
+        if project_id not in projects:
+            raise ItemNotFoundError
+        projects[project_id].is_deleted = True
+        self._save_projects(projects)
+
+class ItemNotFoundError(Exception):
+    pass

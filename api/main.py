@@ -1,8 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from dbfile import DBAdaptor
+from dbfile import DBAdaptor, ItemNotFoundError
 import json
 
 app = FastAPI(title="bil-api")
@@ -33,6 +33,12 @@ async def list_projects():
 async def add_a_new_project(name: str):
     return db.add_project(name)
 
+@app.delete('/projects/{project_id}')
+async def delete_project(project_id: int):
+    try:
+        return db.delete_project(project_id)
+    except ItemNotFoundError:
+        raise HTTPException(status_code=404)
 
 app.mount("/css", StaticFiles(directory="dist/css"), name="static")
 app.mount("/js", StaticFiles(directory="dist/js"), name="static")
