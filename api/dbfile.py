@@ -21,17 +21,24 @@ class DBAdaptor:
             json.dump([p.model_dump() for p in projects], f)
 
     def _get_next_id(self, projects: list[Project]) -> int:
+        if not projects:
+            return 1
         return max([p.id for p in projects]) + 1
 
     def _mk_project_dir(self, project_id: int):
         project_path = self._get_project_path(project_id)
-        os.mkdir(project_path)
+        os.makedirs(project_path)
         os.system(f'git init {project_path}')
+    
+    def _mk_project_db(self, project_id: int):
+        project_path = self._get_project_path(project_id)
+        os.system(f'touch {project_path}/payments.json')
 
     def add_project(self, name: str):
         projects = self.get_projects()
         new_id = self._get_next_id(projects)
         new_project = Project(name=name, id=new_id)
         self._mk_project_dir(new_id)
+        self._mk_project_db(new_id)
         projects.append(new_project)
         self._save_projects(projects)
