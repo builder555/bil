@@ -1,0 +1,7 @@
+node_modules
+bil-ui/dist
+.DS_Store
+.vscode
+**/__pycache__
+main.db
+export.json
