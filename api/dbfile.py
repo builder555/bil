@@ -52,7 +52,7 @@ class DBAdaptor:
             raise ItemNotFoundError
         projects[project_id].is_deleted = True
         self._save_projects(projects)
-    
+
     def get_project(self, project_id: int):
         projects = self.get_projects()
         if project_id not in projects:

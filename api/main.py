@@ -29,7 +29,6 @@ app.mount("/img", StaticFiles(directory="dist/img"), name="static")
 app.mount("/fonts", StaticFiles(directory="dist/fonts"), name="static")
 
 
-
 @app.get("/projects", response_model=list[ProjectResponse])
 async def list_projects():
     return db.get_projects().values()
@@ -47,12 +46,14 @@ async def delete_project(project_id: int):
     except ItemNotFoundError:
         raise HTTPException(status_code=404)
 
+
 @app.get("/projects/{project_id}")
 async def get_project(project_id: int):
     try:
         return db.get_project(project_id)
     except ItemNotFoundError:
         raise HTTPException(status_code=404)
+
 
 @app.get("/manifest.json")
 async def serve_manifest():

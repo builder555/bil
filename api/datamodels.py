@@ -3,13 +3,14 @@ from typing import Optional
 from pydantic import BaseModel
 import json
 
+
 class ProjectResponse(BaseModel):
     id: int
     name: str
 
+
 class Project(ProjectResponse):
     is_deleted: bool = False
-
 
 
 class ProjectEncoder(json.JSONEncoder):
