@@ -7,6 +7,7 @@ import json
 class PaygroupBase(BaseModel):
     name: str
 
+
 class Paygroup(PaygroupBase):
     id: int
 
@@ -19,8 +20,10 @@ class ProjectResponse(BaseModel):
 class Project(ProjectResponse):
     is_deleted: bool = False
 
+
 class ProjectWithPayments(ProjectResponse):
     paygroups: dict[int, Paygroup]
+
 
 class ProjectEncoder(json.JSONEncoder):
     def default(self, obj):

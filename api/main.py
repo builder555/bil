@@ -54,9 +54,11 @@ async def get_project(project_id: int):
     except ItemNotFoundError:
         raise HTTPException(status_code=404)
 
+
 @app.post("/projects/{project_id}/paygroups")
 async def add_new_paygroup(project_id: int, paygroup: PaygroupBase):
     db.add_paygroup(project_id, paygroup)
+
 
 @app.get("/manifest.json")
 async def serve_manifest():
