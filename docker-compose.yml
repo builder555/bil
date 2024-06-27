@@ -2,6 +2,6 @@ services:
   main:
     build: .
     volumes:
-      - ./api:/code
+      - ./api:/app
     ports:
       - "8000:8000"
