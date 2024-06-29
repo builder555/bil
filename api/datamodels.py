@@ -27,7 +27,7 @@ class ProjectWithPayments(ProjectResponse):
 
 class ProjectEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, Project):
+        if issubclass(type(obj), BaseModel):
             return obj.model_dump()
         return super().default(obj)
 

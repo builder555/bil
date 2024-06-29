@@ -31,7 +31,7 @@ app.mount("/fonts", StaticFiles(directory="dist/fonts"), name="static")
 
 @app.get("/projects", response_model=list[ProjectResponse])
 async def list_projects():
-    return db.get_projects().values()
+    return db.get_projects()
 
 
 @app.post("/projects", response_model=None)
@@ -56,8 +56,8 @@ async def get_project(project_id: int):
 
 
 @app.post("/projects/{project_id}/paygroups")
-async def add_new_paygroup(project_id: int, paygroup: PaygroupBase):
-    db.add_paygroup(project_id, paygroup)
+async def add_new_paygroup(project_id: int, name: str):
+    db.add_paygroup(project_id, name)
 
 
 @app.get("/manifest.json")
