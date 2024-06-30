@@ -93,7 +93,7 @@ class DBAdaptor:
         paygroups[new_group_id] = new_paygroup
         self._save_paygroups(project_id, paygroups)
 
-    def get_paygroups(self, project_id: int) -> list[Paygroup]:
+    def get_paygroups(self, project_id: int) -> dict[int, Paygroup]:
         if project_id not in self._projects_dict:
             raise ItemNotFoundError
         groups = {}
