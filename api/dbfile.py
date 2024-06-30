@@ -3,6 +3,7 @@ import os
 import json
 
 from functools import lru_cache
+from typing import Mapping
 
 
 class DBAdaptor:
@@ -38,7 +39,7 @@ class DBAdaptor:
             json.dump(projects, f, cls=ProjectEncoder, indent=4)
         self._get_projects_dict.cache_clear()
 
-    def _get_next_id(self, items: dict[int, Project | Paygroup]) -> int:
+    def _get_next_id(self, items: Mapping[int, Project | Paygroup]) -> int:
         if not items:
             return 1
         return max(items.keys()) + 1
