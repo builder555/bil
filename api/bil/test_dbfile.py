@@ -156,6 +156,31 @@ def test_can_delete_payment(db_with_group: tuple[DBAdaptor, int, int]):
 
 
 @pytest.mark.skip
+def test_can_update_payment(db_with_group: tuple[DBAdaptor, int, int]):
+    pass
+
+
+@pytest.mark.skip
+def test_can_update_paygroup_name(db_with_group: tuple[DBAdaptor, int, int]):
+    pass
+
+
+@pytest.mark.skip
+def test_can_update_project_name(db_with_group: tuple[DBAdaptor, int, int]):
+    pass
+
+
+@pytest.mark.skip
+def test_can_add_files_to_payment(db_with_group: tuple[DBAdaptor, int, int]):
+    pass
+
+
+@pytest.mark.skip
+def test_can_remove_files_from_payment(db_with_group: tuple[DBAdaptor, int, int]):
+    pass
+
+
+@pytest.mark.skip
 def test_can_view_previous_states_of_project(db: DBAdaptor):
     # WHEN THIS IS IMPLEMENTED, REMOVE THE TEST CHECKING FOR .git IN THE PROJECTS DIRECTORY
     pass
