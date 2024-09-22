@@ -2,8 +2,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from datamodels import PaygroupBase, ProjectResponse
-from dbfile import DBAdaptor, ItemNotFoundError
+from bil.datamodels import PaygroupBase, ProjectResponse, ProjectWithPayments
+from bil.dbfile import DBAdaptor, ItemNotFoundError
 import json
 
 app = FastAPI(title="bil-api")
@@ -47,7 +47,7 @@ async def delete_project(project_id: int):
         raise HTTPException(status_code=404)
 
 
-@app.get("/projects/{project_id}")
+@app.get("/projects/{project_id}", response_model=ProjectWithPayments)
 async def get_project(project_id: int):
     try:
         return db.get_project(project_id)
