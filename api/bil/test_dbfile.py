@@ -147,10 +147,12 @@ def test_cannot_delete_nonexistent_payment(db_with_group: tuple[DBAdaptor, int, 
 def test_can_delete_payment(db_with_group: tuple[DBAdaptor, int, int]):
     db, project_id, group_id = db_with_group
     payment = PaymentInput(name="test payment", date="2022-01-02", liability=10000)
-    pay_id = db.add_payment(project_id=project_id, paygroup_id=group_id, payment=payment)
-    db.delete_payment(project_id=project_id, paygroup_id=group_id, pay_id=pay_id)
+    pay1 = db.add_payment(project_id=project_id, paygroup_id=group_id, payment=payment)
+    pay2 = db.add_payment(project_id=project_id, paygroup_id=group_id, payment=payment)
+    db.delete_payment(project_id=project_id, paygroup_id=group_id, pay_id=pay1)
     paygroup = db.get_paygroups(project_id=project_id)[0]
-    assert len(paygroup.payments) == 0
+    assert len(paygroup.payments) == 1
+    assert paygroup.payments[0].id == pay2
 
 
 @pytest.mark.skip

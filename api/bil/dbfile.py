@@ -125,11 +125,12 @@ class DBAdaptor:
 
     def add_payment(self, project_id: int, paygroup_id: int, payment: PaymentInput) -> int:
         paygroup = self._get_paygroup(project_id, paygroup_id)
-        pay_id = 1
-        paygroup.payments.append(Payment(**payment.model_dump(), id=pay_id))
+        payments = self._get_payments_dict(project_id, paygroup_id)
+        new_id = self._get_next_id(payments)
+        paygroup.payments.append(Payment(**payment.model_dump(), id=new_id))
         groups = {**self._get_paygroups_dict(project_id), paygroup_id: paygroup}
         self._save_paygroups(project_id, groups)
-        return pay_id
+        return new_id
 
     def delete_payment(self, project_id: int, paygroup_id: int, pay_id: int):
         groups = self._get_paygroups_dict(project_id)
