@@ -24,4 +24,6 @@ poetry shell
 pytest -v
 # to monitor files and re-run tests when they change:
 ptw --runner 'pytest -v'
+# to format all files:
+black .
 ```
