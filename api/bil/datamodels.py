@@ -8,8 +8,8 @@ import json
 class PaymentInput(BaseModel):
     name: str
     date: Date
-    asset: Optional[int] = 0
-    liability: Optional[int] = 0
+    asset: Optional[int] = 0 #in cents
+    liability: Optional[int] = 0 #in cents
 
     @model_validator(mode="after")
     def must_have_either_asset_or_liability(
