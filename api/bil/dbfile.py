@@ -123,6 +123,13 @@ class DBAdaptor:
         del groups[paygroup_id]
         self._save_paygroups(project_id, groups)
 
+    def update_paygroup(self, project_id: int, paygroup_id: int, name: str):
+        groups = self._get_paygroups_dict(project_id)
+        if paygroup_id not in groups:
+            raise ItemNotFoundError
+        groups[paygroup_id].name = name
+        self._save_paygroups(project_id, groups)
+
     def add_payment(self, project_id: int, paygroup_id: int, payment: PaymentInput) -> int:
         paygroup = self._get_paygroup(project_id, paygroup_id)
         payments = self._get_payments_dict(project_id, paygroup_id)
@@ -149,6 +156,7 @@ class DBAdaptor:
         payments[payment.id] = payment
         groups[paygroup_id].payments = list(payments.values())
         self._save_paygroups(project_id, groups)
+
 
 class ItemNotFoundError(Exception):
     pass

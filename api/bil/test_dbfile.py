@@ -1,4 +1,5 @@
 import os
+import random
 import shutil
 from bil.datamodels import Payment, PaymentInput, Paygroup, Project
 from bil.dbfile import DBAdaptor, ItemNotFoundError
@@ -168,9 +169,14 @@ def test_can_update_payment(db_with_group: tuple[DBAdaptor, int, int]):
     assert stored_payment.liability == updated_payment.liability
     assert stored_payment.asset == updated_payment.asset
 
-@pytest.mark.skip
+
 def test_can_update_paygroup_name(db_with_group: tuple[DBAdaptor, int, int]):
-    pass
+    db, project_id, group_id = db_with_group
+    random_number = random.randint(0, 1000)
+    new_name = f"new paygroup name {random_number}"
+    db.update_paygroup(project_id=project_id, paygroup_id=group_id, name=new_name)
+    paygroup = db.get_paygroups(project_id=project_id)[0]
+    assert paygroup.name == new_name
 
 
 @pytest.mark.skip
