@@ -33,9 +33,12 @@ class Paygroup(PaygroupBase):
     payments: Optional[list[Payment]] = []
 
 
-class ProjectResponse(BaseModel):
-    id: int
+class ProjectInput(BaseModel):
     name: str
+
+
+class ProjectResponse(ProjectInput):
+    id: int
 
 
 class Project(ProjectResponse):
