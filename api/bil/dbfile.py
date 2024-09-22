@@ -61,6 +61,16 @@ class DBAdaptor:
                 groups = json.load(f)
         return {int(k): Paygroup(**v) for k, v in groups.items()}
 
+    def _get_paygroup(self, project_id: int, group_id: int) -> Paygroup:
+        groups = self._get_paygroups_dict(project_id)
+        if group_id not in groups:
+            raise ItemNotFoundError
+        return groups[group_id]
+
+    def _get_payments_dict(self, project_id: int, group_id: int) -> dict[int, Payment]:
+        paygroup = self._get_paygroup(project_id=project_id, group_id=group_id)
+        return {p.id: p for p in paygroup.payments}
+
     def get_projects(self, include_deleted: bool = False) -> list[Project]:
         if include_deleted:
             return list(self._all_projects_dict.values())
@@ -113,12 +123,21 @@ class DBAdaptor:
         del groups[paygroup_id]
         self._save_paygroups(project_id, groups)
 
-    def add_payment(self, project_id: int, paygroup_id: int, payment: PaymentInput):
-        groups = self._get_paygroups_dict(project_id)
-        if paygroup_id not in groups:
-            raise ItemNotFoundError
+    def add_payment(self, project_id: int, paygroup_id: int, payment: PaymentInput) -> int:
+        paygroup = self._get_paygroup(project_id, paygroup_id)
         pay_id = 1
-        groups[paygroup_id].payments.append(Payment(**payment.dict(), id=pay_id))
+        paygroup.payments.append(Payment(**payment.model_dump(), id=pay_id))
+        groups = {**self._get_paygroups_dict(project_id), paygroup_id: paygroup}
+        self._save_paygroups(project_id, groups)
+        return pay_id
+
+    def delete_payment(self, project_id: int, paygroup_id: int, pay_id: int):
+        groups = self._get_paygroups_dict(project_id)
+        payments = self._get_payments_dict(project_id, paygroup_id)
+        if pay_id not in payments:
+            raise ItemNotFoundError
+        del payments[pay_id]
+        groups[paygroup_id].payments = list(payments.values())
         self._save_paygroups(project_id, groups)
 
 

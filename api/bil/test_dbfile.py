@@ -103,14 +103,16 @@ def test_cannot_add_payment_without_asset_or_liability(db_with_group: tuple[DBAd
             payment=PaymentInput(name="test payment", date="2022-01-01"),
         )
 
+
 def test_cannot_add_payment_to_nonexistent_paygroup(db_with_group: tuple[DBAdaptor, int, int]):
     db, project_id, _ = db_with_group
     with pytest.raises(ItemNotFoundError):
         db.add_payment(
-            project_id=project_id, 
-            paygroup_id=42, 
+            project_id=project_id,
+            paygroup_id=42,
             payment=PaymentInput(name="test payment", date="2022-01-01", asset=100),
         )
+
 
 def test_can_add_payment_with_asset_only(db_with_group: tuple[DBAdaptor, int, int]):
     db, project_id, group_id = db_with_group
@@ -134,6 +136,21 @@ def test_added_payments_are_stored_in_paygroups(db_with_group: tuple[DBAdaptor, 
     assert paygroup.payments[0].asset == payment.asset
     assert paygroup.payments[0].date == payment.date
     assert paygroup.payments[0].name == payment.name
+
+
+def test_cannot_delete_nonexistent_payment(db_with_group: tuple[DBAdaptor, int, int]):
+    db, project_id, group_id = db_with_group
+    with pytest.raises(ItemNotFoundError):
+        db.delete_payment(project_id=project_id, paygroup_id=group_id, pay_id=42)
+
+
+def test_can_delete_payment(db_with_group: tuple[DBAdaptor, int, int]):
+    db, project_id, group_id = db_with_group
+    payment = PaymentInput(name="test payment", date="2022-01-02", liability=10000)
+    pay_id = db.add_payment(project_id=project_id, paygroup_id=group_id, payment=payment)
+    db.delete_payment(project_id=project_id, paygroup_id=group_id, pay_id=pay_id)
+    paygroup = db.get_paygroups(project_id=project_id)[0]
+    assert len(paygroup.payments) == 0
 
 
 @pytest.mark.skip
