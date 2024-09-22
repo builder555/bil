@@ -1,4 +1,4 @@
-from bil.datamodels import PaymentInput, Paygroup, Project, ProjectEncoder, ProjectWithPayments
+from bil.datamodels import Payment, PaymentInput, Paygroup, Project, ProjectEncoder, ProjectWithPayments
 import os
 import json
 from dulwich.repo import Repo
@@ -46,6 +46,21 @@ class DBAdaptor:
         os.makedirs(project_path)
         Repo.init(project_path)
 
+    def _save_paygroups(self, project_id: int, paygroups: dict[int, Paygroup]):
+        payfile_path = self._get_payfile_path(project_id)
+        with open(payfile_path, "w") as f:
+            json.dump(paygroups, f, cls=ProjectEncoder, indent=4)
+
+    def _get_paygroups_dict(self, project_id: int) -> dict[int, Paygroup]:
+        if project_id not in self._projects_dict:
+            raise ItemNotFoundError
+        groups = {}
+        payfile_path = self._get_payfile_path(project_id)
+        if os.path.exists(payfile_path):
+            with open(self._get_payfile_path(project_id), "r") as f:
+                groups = json.load(f)
+        return {int(k): Paygroup(**v) for k, v in groups.items()}
+
     def get_projects(self, include_deleted: bool = False) -> list[Project]:
         if include_deleted:
             return list(self._all_projects_dict.values())
@@ -80,11 +95,6 @@ class DBAdaptor:
         project.paygroups = {int(k): Paygroup(**v) for k, v in groups.items()}
         return project
 
-    def _save_paygroups(self, project_id: int, paygroups: dict[int, Paygroup]):
-        payfile_path = self._get_payfile_path(project_id)
-        with open(payfile_path, "w") as f:
-            json.dump(paygroups, f, cls=ProjectEncoder, indent=4)
-
     def add_paygroup(self, project_id: int, name: str) -> int:
         paygroups = self._get_paygroups_dict(project_id)
         new_id = self._get_next_id(paygroups)
@@ -92,16 +102,6 @@ class DBAdaptor:
         paygroups[new_id] = new_paygroup
         self._save_paygroups(project_id, paygroups)
         return new_id
-
-    def _get_paygroups_dict(self, project_id: int) -> dict[int, Paygroup]:
-        if project_id not in self._projects_dict:
-            raise ItemNotFoundError
-        groups = {}
-        payfile_path = self._get_payfile_path(project_id)
-        if os.path.exists(payfile_path):
-            with open(self._get_payfile_path(project_id), "r") as f:
-                groups = json.load(f)
-        return {int(k): Paygroup(**v) for k, v in groups.items()}
 
     def get_paygroups(self, project_id: int) -> list[Paygroup]:
         return list(self._get_paygroups_dict(project_id).values())
@@ -114,7 +114,13 @@ class DBAdaptor:
         self._save_paygroups(project_id, groups)
 
     def add_payment(self, project_id: int, paygroup_id: int, payment: PaymentInput):
-        pass
+        groups = self._get_paygroups_dict(project_id)
+        if paygroup_id not in groups:
+            raise ItemNotFoundError
+        pay_id = 1
+        groups[paygroup_id].payments.append(Payment(**payment.dict(), id=pay_id))
+        self._save_paygroups(project_id, groups)
+
 
 class ItemNotFoundError(Exception):
     pass

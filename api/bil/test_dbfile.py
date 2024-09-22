@@ -13,11 +13,13 @@ def db(fs):
     if os.path.exists(DIR):
         shutil.rmtree(DIR)
 
+
 @pytest.fixture
 def db_with_group(db: DBAdaptor) -> tuple[DBAdaptor, int, int]:
     project_id = db.add_project(name="test")
     group_id = db.add_paygroup(project_id=project_id, name="test paygroup")
     return (db, project_id, group_id)
+
 
 def test_getting_projects_from_blank_db_returns_empty_list(db: DBAdaptor):
     assert db.get_projects() == []
@@ -95,21 +97,43 @@ def test_can_delete_paygroup(db_with_group: tuple[DBAdaptor, int, int]):
 def test_cannot_add_payment_without_asset_or_liability(db_with_group: tuple[DBAdaptor, int, int]):
     db, project_id, group_id = db_with_group
     with pytest.raises(ValueError):
-        payment = PaymentInput(name="test payment", date="2022-01-01")
-        db.add_payment(project_id=project_id, paygroup_id=group_id, payment=payment)
+        db.add_payment(
+            project_id=project_id,
+            paygroup_id=group_id,
+            payment=PaymentInput(name="test payment", date="2022-01-01"),
+        )
 
+def test_cannot_add_payment_to_nonexistent_paygroup(db_with_group: tuple[DBAdaptor, int, int]):
+    db, project_id, _ = db_with_group
+    with pytest.raises(ItemNotFoundError):
+        db.add_payment(
+            project_id=project_id, 
+            paygroup_id=42, 
+            payment=PaymentInput(name="test payment", date="2022-01-01", asset=100),
+        )
 
 def test_can_add_payment_with_asset_only(db_with_group: tuple[DBAdaptor, int, int]):
     db, project_id, group_id = db_with_group
     payment = PaymentInput(name="test payment", date="2022-01-01", asset=10000)
     db.add_payment(project_id=project_id, paygroup_id=group_id, payment=payment)
-    # assert db.get_payments(project_id=1) == {1: [payment]}
 
 
 def test_can_add_payment_with_liability_only(db_with_group: tuple[DBAdaptor, int, int]):
     db, project_id, group_id = db_with_group
     payment = PaymentInput(name="test payment", date="2022-01-01", liability=10000)
     db.add_payment(project_id=project_id, paygroup_id=group_id, payment=payment)
+
+
+def test_added_payments_are_stored_in_paygroups(db_with_group: tuple[DBAdaptor, int, int]):
+    db, project_id, group_id = db_with_group
+    payment = PaymentInput(name="test payment", date="2022-01-01", liability=10000, asset=20000)
+    db.add_payment(project_id=project_id, paygroup_id=group_id, payment=payment)
+    paygroup = db.get_paygroups(project_id=project_id)[0]
+    assert len(paygroup.payments) == 1
+    assert paygroup.payments[0].liability == payment.liability
+    assert paygroup.payments[0].asset == payment.asset
+    assert paygroup.payments[0].date == payment.date
+    assert paygroup.payments[0].name == payment.name
 
 
 @pytest.mark.skip
