@@ -141,6 +141,14 @@ class DBAdaptor:
         groups[paygroup_id].payments = list(payments.values())
         self._save_paygroups(project_id, groups)
 
+    def update_payment(self, project_id: int, paygroup_id: int, payment: Payment):
+        groups = self._get_paygroups_dict(project_id)
+        payments = self._get_payments_dict(project_id, paygroup_id)
+        if payment.id not in payments:
+            raise ItemNotFoundError
+        payments[payment.id] = payment
+        groups[paygroup_id].payments = list(payments.values())
+        self._save_paygroups(project_id, groups)
 
 class ItemNotFoundError(Exception):
     pass

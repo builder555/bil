@@ -1,6 +1,6 @@
 import os
 import shutil
-from bil.datamodels import PaymentInput, Paygroup, Project
+from bil.datamodels import Payment, PaymentInput, Paygroup, Project
 from bil.dbfile import DBAdaptor, ItemNotFoundError
 import pytest
 
@@ -155,10 +155,18 @@ def test_can_delete_payment(db_with_group: tuple[DBAdaptor, int, int]):
     assert paygroup.payments[0].id == pay2
 
 
-@pytest.mark.skip
 def test_can_update_payment(db_with_group: tuple[DBAdaptor, int, int]):
-    pass
-
+    db, project_id, group_id = db_with_group
+    initial_payment = PaymentInput(name="test payment", date="2022-01-02", liability=10000)
+    pay1 = db.add_payment(project_id=project_id, paygroup_id=group_id, payment=initial_payment)
+    updated_payment = Payment(id=pay1, name="test payment updated", date="2022-01-03", liability=20000, asset=30000)
+    db.update_payment(project_id=project_id, paygroup_id=group_id, payment=updated_payment)
+    paygroup = db.get_paygroups(project_id=project_id)[0]
+    stored_payment = paygroup.payments[0]
+    assert stored_payment.name == updated_payment.name
+    assert stored_payment.date == updated_payment.date
+    assert stored_payment.liability == updated_payment.liability
+    assert stored_payment.asset == updated_payment.asset
 
 @pytest.mark.skip
 def test_can_update_paygroup_name(db_with_group: tuple[DBAdaptor, int, int]):
