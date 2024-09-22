@@ -105,6 +105,13 @@ class DBAdaptor:
         project.paygroups = {int(k): Paygroup(**v) for k, v in groups.items()}
         return project
 
+    def update_project(self, project_id: int, name: str):
+        projects = self._projects_dict
+        if project_id not in projects:
+            raise ItemNotFoundError
+        projects[project_id].name = name
+        self._save_projects(projects)
+
     def add_paygroup(self, project_id: int, name: str) -> int:
         paygroups = self._get_paygroups_dict(project_id)
         new_id = self._get_next_id(paygroups)

@@ -179,9 +179,13 @@ def test_can_update_paygroup_name(db_with_group: tuple[DBAdaptor, int, int]):
     assert paygroup.name == new_name
 
 
-@pytest.mark.skip
 def test_can_update_project_name(db_with_group: tuple[DBAdaptor, int, int]):
-    pass
+    db, project_id, _ = db_with_group
+    random_number = random.randint(0, 1000)
+    new_name = f"new project name {random_number}"
+    db.update_project(project_id=project_id, name=new_name)
+    project = db.get_projects()[0]
+    assert project.name == new_name
 
 
 @pytest.mark.skip
