@@ -24,11 +24,11 @@ class Payment(PaymentInput):
     id: int
 
 
-class PaygroupBase(BaseModel):
+class PaygroupInput(BaseModel):
     name: str
 
 
-class Paygroup(PaygroupBase):
+class Paygroup(PaygroupInput):
     id: int
     payments: Optional[list[Payment]] = []
 
@@ -56,3 +56,7 @@ class ProjectEncoder(json.JSONEncoder):
         if isinstance(obj, Date):
             return obj.isoformat()
         return super().default(obj)
+
+
+class NewItemResponse(BaseModel):
+    id: int

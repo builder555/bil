@@ -96,13 +96,13 @@ class DBAdaptor:
         projects = self._projects_dict
         if project_id not in projects:
             raise ItemNotFoundError
-        project = ProjectWithPayments(**projects[project_id].model_dump(), paygroups={})
+        project = ProjectWithPayments(**projects[project_id].model_dump(), paygroups=[])
         groups = {}
         payfile_path = self._get_payfile_path(project_id)
         if os.path.exists(payfile_path):
             with open(payfile_path, "r") as f:
                 groups = json.load(f)
-        project.paygroups = {int(k): Paygroup(**v) for k, v in groups.items()}
+        project.paygroups = [Paygroup(**v) for v in groups.values()]
         return project
 
     def update_project(self, project_id: int, name: str):
