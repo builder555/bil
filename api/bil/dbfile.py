@@ -198,6 +198,16 @@ class DBAdaptor:
         with open(file_list[0], "rb") as f:
             return f.read()
 
+    def delete_file_from_payment(self, project_id: int, paygroup_id: int, payment_id: int):
+        payments = self._get_payments_dict(project_id, paygroup_id)
+        if payment_id not in payments:
+            raise ItemNotFoundError
+        project_folder = self._get_project_path(project_id)
+        file_list = glob.glob(os.path.join(project_folder, f"{paygroup_id}_{payment_id}*"))
+        if len(file_list) == 0:
+            raise ItemNotFoundError
+        os.remove(file_list[0])
+
 
 class ItemNotFoundError(Exception):
     pass

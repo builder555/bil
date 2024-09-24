@@ -158,6 +158,14 @@ async def get_files_from_payment(project_id: int, group_id: int, payment_id: int
         raise HTTPException(status_code=404)
 
 
+@app.delete("/projects/{project_id}/paygroups/{group_id}/payments/{payment_id}/files")
+async def delete_file_from_payment(project_id: int, group_id: int, payment_id: int, db=Depends(get_db)):
+    try:
+        return db.delete_file_from_payment(project_id, group_id, payment_id)
+    except ItemNotFoundError:
+        raise HTTPException(status_code=404)
+
+
 @app.get("/manifest.json")
 async def serve_manifest():
     with open("dist/manifest.json", "r") as f:

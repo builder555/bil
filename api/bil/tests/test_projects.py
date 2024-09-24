@@ -334,9 +334,15 @@ def test_can_get_files_from_payment(client, fake_payment):
     assert resp.content == small_pdf
 
 
-@pytest.mark.skip
-def test_can_remove_files_from_payment(client):
-    pass
+def test_can_remove_files_from_payment(client, fake_payment):
+    client.post("/projects", json={"name": "Test Project"})
+    client.post("/projects/1/paygroups", json={"name": "Test Paygroup"})
+    client.post("/projects/1/paygroups/1/payments", json=fake_payment)
+    client.post("/projects/1/paygroups/1/payments/1/files", files={"file": ("test.pdf", small_pdf, "application/pdf")})
+    resp = client.delete("/projects/1/paygroups/1/payments/1/files")
+    assert resp.status_code == 200
+    project_resp = client.get("/projects/1").json()
+    assert not project_resp["paygroups"][0]["payments"][0]["attachment"]
 
 
 @pytest.mark.skip
