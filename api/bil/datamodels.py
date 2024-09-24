@@ -1,4 +1,4 @@
-from sqlite3.dbapi2 import Date
+from datetime import date
 from typing import Optional
 from pydantic import BaseModel, model_validator, ValidationInfo
 from typing_extensions import Self
@@ -7,7 +7,7 @@ import json
 
 class PaymentInput(BaseModel):
     name: str
-    date: Date
+    date: date
     asset: Optional[int] = 0  # in cents
     liability: Optional[int] = 0  # in cents
 
@@ -54,7 +54,7 @@ class ProjectEncoder(json.JSONEncoder):
     def default(self, obj):
         if issubclass(type(obj), BaseModel):
             return obj.model_dump()
-        if isinstance(obj, Date):
+        if isinstance(obj, date):
             return obj.isoformat()
         return super().default(obj)
 
