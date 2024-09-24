@@ -2,6 +2,12 @@
 
 - Python 3.9
 - Poetry
+- libmagic:
+```shell
+brew install libmagic
+# or
+sudo apt install libmagic1
+```
 
 ### Installation
 
