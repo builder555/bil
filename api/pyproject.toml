@@ -10,6 +10,8 @@ python = "^3.10"
 fastapi = "^0.115.0"
 uvicorn = {extras = ["standard"], version = "^0.30.6"}
 dulwich = "^0.22.1"
+python-multipart = "^0.0.10"
+python-magic = "^0.4.27"
 
 
 [tool.poetry.group.dev.dependencies]
