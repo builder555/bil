@@ -22,6 +22,7 @@ class PaymentInput(BaseModel):
 
 class Payment(PaymentInput):
     id: int
+    attachment: str = ""
 
 
 class PaygroupInput(BaseModel):

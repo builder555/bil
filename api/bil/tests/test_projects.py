@@ -1,10 +1,10 @@
 import random
-from bil.datamodels import Project
 import pytest
 from fastapi.testclient import TestClient
 from bil.main import app, get_db
 from bil.dbfile import DBAdaptor
 import os, shutil
+import base64
 
 
 @pytest.fixture
@@ -21,6 +21,30 @@ def client(fs):
 @pytest.fixture
 def fake_payment():
     return {"name": "Test Payment", "date": "2022-01-01", "asset": 10000}
+
+
+small_pdf = b"""%PDF-1.1
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 0 /Kids [ ] >>
+endobj
+xref
+0 3
+0000000000 65535 f 
+0000000009 00000 n 
+0000000051 00000 n 
+trailer
+<< /Size 3 /Root 1 0 R >>
+startxref
+83
+%%EOF"""
+
+small_jpeg = base64.b64decode(
+    "/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP////////////////////////////////////////////////////////////////"
+    + "//////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA="
+)
 
 
 def test_read_main(client):
@@ -210,8 +234,8 @@ def test_can_update_project_name(client):
     new_id = project_resp.json()["id"]
     random_number = random.randint(0, 1000)
     new_name = f"updated project {random_number}"
-    resp = client.put(f"/projects/{new_id}", json={"name": new_name})
-    assert resp.status_code == 200
+    update_resp = client.put(f"/projects/{new_id}", json={"name": new_name})
+    assert update_resp.status_code == 200
     resp = client.get(f"/projects/{new_id}")
     assert resp.json()["name"] == new_name
 
@@ -219,10 +243,10 @@ def test_can_update_project_name(client):
 def test_can_update_payment(client, fake_payment):
     project_resp = client.post("/projects", json={"name": "Test Project"})
     new_id = project_resp.json()["id"]
-    resp = client.post(f"/projects/{new_id}/paygroups", json={"name": "Test Paygroup"})
-    new_group_id = resp.json()["id"]
-    resp = client.post(f"/projects/{new_id}/paygroups/{new_group_id}/payments", json=fake_payment)
-    new_payment_id = resp.json()["id"]
+    new_paygroup_resp = client.post(f"/projects/{new_id}/paygroups", json={"name": "Test Paygroup"})
+    new_group_id = new_paygroup_resp.json()["id"]
+    new_paymen_resp = client.post(f"/projects/{new_id}/paygroups/{new_group_id}/payments", json=fake_payment)
+    new_payment_id = new_paymen_resp.json()["id"]
     random_number = random.randint(0, 1000)
     updated_payment = {
         "name": f"updated payment {random_number}",
@@ -230,7 +254,91 @@ def test_can_update_payment(client, fake_payment):
         "liability": random.randint(0, 1000),
         "date": "1990-05-15",
     }
-    resp = client.put(f"/projects/{new_id}/paygroups/{new_group_id}/payments/{new_payment_id}", json=updated_payment)
+    update_payments_resp = client.put(
+        f"/projects/{new_id}/paygroups/{new_group_id}/payments/{new_payment_id}", json=updated_payment
+    )
+    assert update_payments_resp.status_code == 200
+    updated_project = client.get(f"/projects/{new_id}")
+    payment = updated_project.json()["paygroups"][0]["payments"][0]
+    assert payment["name"] == updated_payment["name"]
+    assert payment["asset"] == updated_payment["asset"]
+    assert payment["liability"] == updated_payment["liability"]
+    assert payment["date"] == updated_payment["date"]
+
+
+def test_cannot_upload_files_invalid_mimetype(client, fake_payment):
+    client.post("/projects", json={"name": "Test Project"})
+    client.post("/projects/1/paygroups", json={"name": "Test Paygroup"})
+    client.post("/projects/1/paygroups/1/payments", json=fake_payment)
+    adding_js_resp = client.post(
+        "/projects/1/paygroups/1/payments/1/files", files={"file": ("bad-file.js", b"test-data", "text/plain")}
+    )
+    assert adding_js_resp.status_code == 415
+
+    adding_fake_pdf_resp = client.post(
+        "/projects/1/paygroups/1/payments/1/files", files={"file": ("test.pdf", b"test-data", "application/pdf")}
+    )
+    assert adding_fake_pdf_resp.status_code == 415
+
+
+def test_cannot_add_files_to_nonexistent_payment(client):
+    client.post("/projects", json={"name": "Test Project"})
+    client.post("/projects/1/paygroups", json={"name": "Test Paygroup"})
+    resp = client.post(
+        "/projects/1/paygroups/1/payments/1/files", files={"file": ("test.pdf", small_pdf, "application/pdf")}
+    )
+    assert resp.status_code == 404
+
+
+def test_can_add_files_to_payment(client, fake_payment):
+    client.post("/projects", json={"name": "Test Project"})
+    client.post("/projects/1/paygroups", json={"name": "Test Paygroup"})
+    client.post("/projects/1/paygroups/1/payments", json=fake_payment)
+    added_pdf_resp = client.post(
+        "/projects/1/paygroups/1/payments/1/files", files={"file": ("test.pdf", small_pdf, "application/pdf")}
+    )
+    assert added_pdf_resp.status_code == 200
+    added_jpeg_resp = client.post(
+        "/projects/1/paygroups/1/payments/1/files", files={"file": ("test.jpeg", small_jpeg, "image/jpeg")}
+    )
+    assert added_jpeg_resp.status_code == 200
+
+
+def test_cannot_get_files_from_nonexistent_payment(client):
+    client.post("/projects", json={"name": "Test Project"})
+    client.post("/projects/1/paygroups", json={"name": "Test Paygroup"})
+    resp = client.get("/projects/1/paygroups/1/payments/1/files")
+    assert resp.status_code == 404
+
+
+def test_cannot_get_files_from_when_none_added(client, fake_payment):
+    client.post("/projects", json={"name": "Test Project"})
+    client.post("/projects/1/paygroups", json={"name": "Test Paygroup"})
+    client.post("/projects/1/paygroups/1/payments", json=fake_payment)
+    project_resp = client.get("/projects/1").json()
+    assert not project_resp["paygroups"][0]["payments"][0]["attachment"]
+    resp = client.get("/projects/1/paygroups/1/payments/1/files")
+    assert resp.status_code == 404
+
+
+def test_can_get_files_from_payment(client, fake_payment):
+    client.post("/projects", json={"name": "Test Project"})
+    client.post("/projects/1/paygroups", json={"name": "Test Paygroup"})
+    client.post("/projects/1/paygroups/1/payments", json=fake_payment)
+    client.post("/projects/1/paygroups/1/payments/1/files", files={"file": ("test.pdf", small_pdf, "application/pdf")})
+    project_resp = client.get("/projects/1").json()
+    payments = project_resp["paygroups"][0]["payments"]
+    assert payments[0]["attachment"] == "1_1.pdf"
+    resp = client.get("/projects/1/paygroups/1/payments/1/files")
     assert resp.status_code == 200
-    resp = client.get(f"/projects/{new_id}")
-    assert resp.json()["paygroups"][0]["payments"][0] == {**updated_payment, "id": new_payment_id}
+    assert resp.content == small_pdf
+
+
+@pytest.mark.skip
+def test_can_remove_files_from_payment(client):
+    pass
+
+
+@pytest.mark.skip
+def test_can_view_previous_states_of_project(client):
+    pass

@@ -1,8 +1,11 @@
 from bil.datamodels import Payment, PaymentInput, Paygroup, Project, ProjectEncoder, ProjectWithPayments
 import os
+import shutil
 import json
 from dulwich.repo import Repo
 from typing import Mapping
+from fastapi import UploadFile
+import glob
 
 
 class DBAdaptor:
@@ -93,6 +96,13 @@ class DBAdaptor:
         self._save_projects(projects)
 
     def get_project(self, project_id: int) -> ProjectWithPayments:
+        def find_attachments(project_id: int, group_id: int, pay_id: int) -> bool:
+            attachments = glob.glob(os.path.join(self._get_project_path(project_id), f"{group_id}_{pay_id}*"))
+            file_name = ""
+            if attachments:
+                file_name = os.path.basename(attachments[0])
+            return file_name
+
         projects = self._projects_dict
         if project_id not in projects:
             raise ItemNotFoundError
@@ -102,6 +112,9 @@ class DBAdaptor:
         if os.path.exists(payfile_path):
             with open(payfile_path, "r") as f:
                 groups = json.load(f)
+        for group in groups.values():
+            for pay in group["payments"]:
+                pay["attachment"] = find_attachments(project_id, group["id"], pay["id"])
         project.paygroups = [Paygroup(**v) for v in groups.values()]
         return project
 
@@ -163,6 +176,27 @@ class DBAdaptor:
         payments[payment.id] = payment
         groups[paygroup_id].payments = list(payments.values())
         self._save_paygroups(project_id, groups)
+
+    def add_file_to_payment(self, project_id: int, paygroup_id: int, payment_id: int, file: UploadFile):
+        payments = self._get_payments_dict(project_id, paygroup_id)
+        if payment_id not in payments:
+            raise ItemNotFoundError
+        project_folder = self._get_project_path(project_id)
+        extension = os.path.splitext(file.filename)[1]
+        file_name = os.path.join(project_folder, f"{paygroup_id}_{payment_id}{extension}")
+        with open(file_name, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+
+    def get_files_from_payment(self, project_id: int, paygroup_id: int, payment_id: int) -> bytearray:
+        payments = self._get_payments_dict(project_id, paygroup_id)
+        if payment_id not in payments:
+            raise ItemNotFoundError
+        project_folder = self._get_project_path(project_id)
+        file_list = glob.glob(os.path.join(project_folder, f"{paygroup_id}_{payment_id}*"))
+        if len(file_list) == 0:
+            raise ItemNotFoundError
+        with open(file_list[0], "rb") as f:
+            return f.read()
 
 
 class ItemNotFoundError(Exception):

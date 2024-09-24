@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -13,6 +13,7 @@ from bil.datamodels import (
 )
 from bil.dbfile import DBAdaptor, ItemNotFoundError
 import json
+import magic
 
 app = FastAPI(title="bil-api")
 
@@ -32,6 +33,19 @@ app.add_middleware(
 def get_db():
     db = DBAdaptor("data/")
     return db
+
+
+def only_allow_types(content_types):
+    async def inner(file: UploadFile):
+        sample_bytes = await file.read(2048)
+        await file.seek(0)
+        mime = magic.Magic(mime=True)
+        mime_type = mime.from_buffer(sample_bytes)
+        if mime_type not in content_types:
+            raise HTTPException(status_code=415, detail="Unsupported media type")
+        return file
+
+    return inner
 
 
 app.mount("/css", StaticFiles(directory="dist/css"), name="static")
@@ -118,6 +132,28 @@ async def delete_payment(project_id: int, group_id: int, payment_id: int, db=Dep
 async def update_payment(project_id: int, group_id: int, payment_id: int, payment: PaymentInput, db=Depends(get_db)):
     try:
         return db.update_payment(project_id, group_id, Payment(id=payment_id, **payment.model_dump()))
+    except ItemNotFoundError:
+        raise HTTPException(status_code=404)
+
+
+@app.post("/projects/{project_id}/paygroups/{group_id}/payments/{payment_id}/files")
+async def add_file_to_payment(
+    project_id: int,
+    group_id: int,
+    payment_id: int,
+    file: UploadFile = Depends(only_allow_types(["application/pdf", "image/jpeg"])),
+    db: DBAdaptor = Depends(get_db),
+):
+    try:
+        return db.add_file_to_payment(project_id, group_id, payment_id, file)
+    except ItemNotFoundError:
+        raise HTTPException(status_code=404)
+
+
+@app.get("/projects/{project_id}/paygroups/{group_id}/payments/{payment_id}/files", response_model=bytes)
+async def get_files_from_payment(project_id: int, group_id: int, payment_id: int, db=Depends(get_db)):
+    try:
+        return Response(content=db.get_files_from_payment(project_id, group_id, payment_id))
     except ItemNotFoundError:
         raise HTTPException(status_code=404)
 
