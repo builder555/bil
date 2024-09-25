@@ -89,10 +89,29 @@ async def update_project(project_id: int, project: ProjectInput, db=Depends(get_
         raise HTTPException(status_code=404)
 
 
+@app.get("/projects/{project_id}/history")
+async def get_project_history(project_id: int, db=Depends(get_db)):
+    try:
+        return db.get_project_history(project_id)
+    except ItemNotFoundError:
+        raise HTTPException(status_code=404)
+
+
+@app.get("/projects/{project_id}/history/{history_id}", response_model=ProjectWithPayments)
+async def get_project_history_by_id(project_id: int, history_id: str, db=Depends(get_db)):
+    try:
+        return db.get_project_state(project_id, history_id)
+    except ItemNotFoundError:
+        raise HTTPException(status_code=404)
+
+
 @app.post("/projects/{project_id}/paygroups", response_model=NewItemResponse)
 async def add_new_paygroup(project_id: int, group: PaygroupInput, db=Depends(get_db)):
-    group_id = db.add_paygroup(project_id, group.name)
-    return {"id": group_id}
+    try:
+        group_id = db.add_paygroup(project_id, group.name)
+        return {"id": group_id}
+    except ItemNotFoundError:
+        raise HTTPException(status_code=404)
 
 
 @app.delete("/projects/{project_id}/paygroups/{group_id}")
@@ -170,11 +189,6 @@ async def delete_file_from_payment(project_id: int, group_id: int, payment_id: i
 async def serve_manifest():
     with open("dist/manifest.json", "r") as f:
         return json.loads(f.read())
-
-
-@app.get("/ping")
-async def ping():
-    return "pong"
 
 
 @app.get("/")

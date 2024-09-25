@@ -2,7 +2,6 @@ from bil.datamodels import Payment, PaymentInput, Paygroup, Project, ProjectEnco
 import os
 import shutil
 import json
-from dulwich.repo import Repo
 from typing import Mapping
 from fastapi import UploadFile
 import glob
@@ -47,12 +46,31 @@ class DBAdaptor:
     def _mk_project_dir(self, project_id: int):
         project_path = self._get_project_path(project_id)
         os.makedirs(project_path)
-        Repo.init(project_path)
+        self.__repo_init(project_id)
+
+    def __repo_init(self, project_id: int):
+        project_path = self._get_project_path(project_id)
+        os.system(f"git -C {project_path} init")
+
+    def __repo_commit(self, project_id: int):
+        project_path = self._get_project_path(project_id)
+        os.system(f"git -C {project_path} add .")
+        os.system(f"git -C {project_path} commit -m 'updated'")
+
+    def __repo_checkout(self, project_id: int, commit_id: str):
+        project_path = self._get_project_path(project_id)
+        os.system(f"git -C {project_path} checkout {commit_id}")
+
+    def __repo_list(self, project_id: int) -> list[dict]:
+        project_path = self._get_project_path(project_id)
+        resp = os.popen(f'git -C {project_path} log --format="%h %ad"').read().splitlines()
+        return [{"id": x.split(" ")[0], "date": x.split(" ")[1]} for x in resp]
 
     def _save_paygroups(self, project_id: int, paygroups: dict[int, Paygroup]):
         payfile_path = self._get_payfile_path(project_id)
         with open(payfile_path, "w") as f:
             json.dump(paygroups, f, cls=ProjectEncoder, indent=4)
+        self.__repo_commit(project_id)
 
     def _get_paygroups_dict(self, project_id: int) -> dict[int, Paygroup]:
         if project_id not in self._projects_dict:
@@ -186,6 +204,7 @@ class DBAdaptor:
         file_name = os.path.join(project_folder, f"{paygroup_id}_{payment_id}{extension}")
         with open(file_name, "wb") as f:
             shutil.copyfileobj(file.file, f)
+        self.__repo_commit(project_id)
 
     def get_files_from_payment(self, project_id: int, paygroup_id: int, payment_id: int) -> bytearray:
         payments = self._get_payments_dict(project_id, paygroup_id)
@@ -207,6 +226,16 @@ class DBAdaptor:
         if len(file_list) == 0:
             raise ItemNotFoundError
         os.remove(file_list[0])
+        self.__repo_commit(project_id)
+
+    def get_project_history(self, project_id: int) -> list[dict]:
+        return self.__repo_list(project_id)
+
+    def get_project_state(self, project_id: int, history_id: str) -> ProjectWithPayments:
+        self.__repo_checkout(project_id, history_id)
+        project_state = self.get_project(project_id)
+        self.__repo_checkout(project_id, "master")
+        return project_state
 
 
 class ItemNotFoundError(Exception):
