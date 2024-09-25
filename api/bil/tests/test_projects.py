@@ -5,8 +5,6 @@ from bil.main import app, get_db
 from bil.dbfile import DBAdaptor
 import os, shutil
 import base64
-import platform
-import subprocess
 
 
 small_pdf = b"""%PDF-1.1
