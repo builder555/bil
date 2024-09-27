@@ -206,7 +206,7 @@ class DBAdaptor:
             shutil.copyfileobj(file.file, f)
         self.__repo_commit(project_id)
 
-    def get_files_from_payment(self, project_id: int, paygroup_id: int, payment_id: int) -> bytearray:
+    def get_files_from_payment(self, project_id: int, paygroup_id: int, payment_id: int) -> str:
         payments = self._get_payments_dict(project_id, paygroup_id)
         if payment_id not in payments:
             raise ItemNotFoundError
@@ -214,8 +214,7 @@ class DBAdaptor:
         file_list = glob.glob(os.path.join(project_folder, f"{paygroup_id}_{payment_id}*"))
         if len(file_list) == 0:
             raise ItemNotFoundError
-        with open(file_list[0], "rb") as f:
-            return f.read()
+        return file_list[0]
 
     def delete_file_from_payment(self, project_id: int, paygroup_id: int, payment_id: int):
         payments = self._get_payments_dict(project_id, paygroup_id)

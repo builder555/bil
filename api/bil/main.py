@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, Response
+from fastapi import FastAPI, HTTPException, Depends, UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from bil.datamodels import (
     PaygroupInput,
     Payment,
@@ -14,6 +14,7 @@ from bil.datamodels import (
 from bil.dbfile import DBAdaptor, ItemNotFoundError
 import json
 import magic
+import os
 
 app = FastAPI(title="bil-api")
 
@@ -36,7 +37,7 @@ def get_db():
 
 
 def only_allow_types(content_types):
-    async def inner(file: UploadFile):
+    async def inner(file: UploadFile) -> UploadFile:
         sample_bytes = await file.read(2048)
         await file.seek(0)
         mime = magic.Magic(mime=True)
@@ -169,10 +170,18 @@ async def add_file_to_payment(
         raise HTTPException(status_code=404)
 
 
-@app.get("/projects/{project_id}/paygroups/{group_id}/payments/{payment_id}/files", response_model=bytes)
+@app.get("/projects/{project_id}/paygroups/{group_id}/payments/{payment_id}/files", response_class=FileResponse)
 async def get_files_from_payment(project_id: int, group_id: int, payment_id: int, db=Depends(get_db)):
     try:
-        return Response(content=db.get_files_from_payment(project_id, group_id, payment_id))
+        file_path = db.get_files_from_payment(project_id, group_id, payment_id)
+        extension = os.path.splitext(file_path)[1]
+        media_type = magic.from_file(file_path, mime=True)
+        return FileResponse(
+            path=file_path,
+            filename=f"payment_{payment_id}{extension}",
+            content_disposition_type="inline",
+            media_type=media_type,
+        )
     except ItemNotFoundError:
         raise HTTPException(status_code=404)
 
