@@ -1,6 +1,6 @@
 from datetime import date
 from typing import Optional
-from pydantic import BaseModel, model_validator, ValidationInfo
+from pydantic import BaseModel, model_validator
 from typing_extensions import Self
 import json
 
