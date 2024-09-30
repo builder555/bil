@@ -38,6 +38,7 @@ def test_can_update_payment(client_with_payment):
         "asset": random.randint(0, 1000),
         "liability": random.randint(0, 1000),
         "date": "1990-05-15",
+        "currency": "CAD",
     }
     update_payments_resp = client.put(
         f"/projects/{project_id}/paygroups/{group_id}/payments/{pay_id}", json=updated_payment
@@ -49,6 +50,7 @@ def test_can_update_payment(client_with_payment):
     assert payment["asset"] == updated_payment["asset"]
     assert payment["liability"] == updated_payment["liability"]
     assert payment["date"] == updated_payment["date"]
+    assert payment["currency"] == updated_payment["currency"]
 
 
 def test_can_add_files_to_payment(client_with_payment, small_pdf, small_jpeg):

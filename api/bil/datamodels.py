@@ -10,6 +10,7 @@ class PaymentInput(BaseModel):
     date: date
     asset: Optional[int] = 0  # in cents
     liability: Optional[int] = 0  # in cents
+    currency: str
 
     @model_validator(mode="after")
     def must_have_either_asset_or_liability(
