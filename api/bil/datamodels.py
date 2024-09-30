@@ -1,16 +1,16 @@
 from datetime import date
 from typing import Optional
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, Field
 from typing_extensions import Self
 import json
 
 
 class PaymentInput(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=255)
     date: date
     asset: Optional[int] = 0  # in cents
     liability: Optional[int] = 0  # in cents
-    currency: str
+    currency: str = Field(min_length=1, max_length=3)
 
     @model_validator(mode="after")
     def must_have_either_asset_or_liability(
@@ -27,7 +27,7 @@ class Payment(PaymentInput):
 
 
 class PaygroupInput(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=255)
 
 
 class Paygroup(PaygroupInput):
