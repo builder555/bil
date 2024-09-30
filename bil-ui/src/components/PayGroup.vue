@@ -9,12 +9,12 @@
         <v-text-field
           label="Group title"
           v-model="groupName"
-          append-outer-icon="fa-check"
+          :append-outer-icon="groupName.length > 0 ? 'fa fa-check' : ''"
           @click.stop=""
           @click:append-outer.stop="updateGroupName"
         />
       </span>
-      <span v-else @click.stop="editingName=true">
+      <span v-else @click="toggleEditName">
         {{group.name}}
       </span>
     </v-col>
@@ -34,26 +34,26 @@
       sm="2"
       class="text-right"
       :class="{
-        'warning--text': group.owed > 0,
-        'primary--text': group.owed < 0,
+        'warning--text': totals.liability > 0,
+        'primary--text': totals.liability < 0,
       }"
     >
-      {{group.owed | currency}}
+      {{totals.liability | currency}}
     </v-col>
     <v-col
       cols="4"
       sm="2"
       class="text-right"
       :class="{
-        'error--text': group.total > 0,
-        'success--text': group.total < 0,
+        'error--text': totals.asset > 0,
+        'success--text': totals.asset < 0,
       }"
     >
-      {{group.total | currency}}
+      {{totals.asset | currency}}
     </v-col>
     <v-col
-      cols="12"
       v-if="active"
+      cols="12"
       style="cursor:default"
       @click.stop=""
     >
@@ -108,7 +108,7 @@
               class="text-right"
             >
               Owed
-              <div>{{totals.owed | currency}}</div>
+              <div>{{totals.liability | currency}}</div>
             </v-col>
             <v-col
               cols="4"
@@ -116,142 +116,43 @@
               class="text-right"
             >
               Total
-              <div>{{totals.paid | currency}}</div>
+              <div>{{totals.asset | currency}}</div>
             </v-col>
           </v-row>
-          <v-row
+          <span
             v-for="pay in sortedPayments"
             :key="pay.id"
-            class="row-pay secondary"
-            v-touch="{
-              left: () => toggleDelete(pay, true),
-              right: () => toggleDelete(pay, false),
-            }"
-            @click="toggleEdit(pay, true)"
           >
-            <v-col
-              cols="12"
-              md="6"
-              class="text-left pb-0 pt-2"
-            >
-              <div v-if="!!pay.editing">
-                <v-row class="my-0 py-0">
-                  <v-col cols="2" class="my-0 py-0">
-                    <v-autocomplete
-                      :items="currencies"
-                      item-text="name"
-                      item-value="id"
-                      label="Currency"
-                      :return-object="false"
-                      auto-select-first
-                    />
-                  </v-col>
-                  <v-col cols="10" class="my-0 py-0">
-                    <v-text-field
-                      v-model="pay.editing.name"
-                      label="Name"
-                    />
-                  </v-col>
-                </v-row>
-              </div>
-              <div v-else>
-                {{pay.name}}
-              </div>
-            </v-col>
-            <v-col
-              cols="4"
-              md="2"
-              class="text-right py-0 py-md-2"
-            >
-              <div v-if="!!pay.editing">
-                <v-text-field
-                  v-model="pay.editing.when"
-                  label="Date"
-                />
-              </div>
-              <div v-else>{{pay.when}}</div>
-            </v-col>
-            <v-col
-              cols="4"
-              md="2"
-              class="text-right py-0 py-md-2"
-            >
-              <div v-if="!!pay.editing">
-                <v-text-field
-                  v-model="pay.editing.owed"
-                  label="Owed"
-                  type="number"
-                />
-              </div>
-              <div v-else>{{pay.owed | currency}}</div>
-            </v-col>
-            <v-col
-              cols="4"
-              md="2"
-              class="text-right py-0 py-md-2"
-            >
-              <div v-if="!!pay.editing">
-                <v-text-field
-                  v-model="pay.editing.amount"
-                  label="Paid"
-                  type="number"
-                  append-outer-icon="fa-times"
-                  :append-icon="isPayValid(pay.editing) ? 'fa-check' : ''"
-                  @click:append="savePay(pay.editing)"
-                  @click:append-outer="toggleEdit(pay, false)"
-                />
-              </div>
-              <div v-else>{{pay.amount | currency}}</div>
-            </v-col>
-            <div
-              class="payrow-hover-buttons"
-              :class="{
-                'd-block': pay.isTrashVisible
-              }"
-            >
-              <v-btn
-                v-show="!pay.editing && (pay.owed !== pay.amount || pay.changed)"
-                small
-                :color="pay.changed ? 'warning' : 'info'"
-                class="mt-1"
-                @click.stop="pay.changed ? undoCopy(pay) : copyPaidToOwed(pay)"
-              >
-                <v-icon v-if="!pay.changed">far fa-arrow-alt-circle-left</v-icon>
-                <v-icon v-else>fas fa-times</v-icon>
-              </v-btn>
-              <v-btn
-                v-show="!pay.editing && (pay.owed !== pay.amount || pay.changed)"
-                small
-                color="info"
-                class="mt-1"
-                @click.stop="pay.changed ? savePay(pay) :copyOwedToPaid(pay)"
-              >
-                <v-icon v-if="!pay.changed">far fa-arrow-alt-circle-right</v-icon>
-                <v-icon v-else>fas fa-check</v-icon>
-              </v-btn>
-              <v-btn
-                v-show="!pay.editing"
-                small
-                color="error"
-                class="mt-1"
-                @click.stop="deletePayment(pay)"
-              >
-                <v-icon>fa fa-trash-alt</v-icon>
-              </v-btn>
-            </div>
-          </v-row>
+            <PaymentRow
+              :pay="pay"
+              @save="savePay"
+              @delete="deletePay"
+              @setActivePayment="(pay) => activePayment = pay"
+            />
+        </span>
         </v-container>
       </v-card>
     </v-col>
+    <PaymentDetails
+      :payment="activePayment"
+      @save="savePay"
+      @close="activePayment = null"
+    />
   </v-row>
 </template>
 
 <script>
 import { currency } from '@/assets/constants';
 import Service from '@/service';
+import PaymentDetails from '@/components/PaymentDetails.vue';
+import PaymentRow from '@/components/PaymentRow.vue';
 
 export default {
   name: 'PayGroup',
+  components: {
+    PaymentDetails,
+    PaymentRow,
+  },
   filters: {
     currency,
   },
@@ -262,38 +163,34 @@ export default {
   data: () => ({
     editingName: false,
     groupName: '',
-    payments: [],
     paymentSearch: '',
     service: Service,
-    currencies: [
-      { symbol: '$', name: 'CAD', id: 0 },
-      { symbol: '$', name: 'USD', id: 1 },
-      { symbol: '£', name: 'GBP', id: 2 },
-      { symbol: '€', name: 'EUR', id: 3 },
-    ],
+    activePayment: null,
   }),
   watch: {
     active: {
       immediate: true,
-      handler() {
-        this.getPayments();
+      handler(active) {
+        if (!active) return;
         this.groupName = this.group.name;
+        this.service.setActiveGroup(this.group.id);
       },
     },
   },
   computed: {
+    payments() {
+      return this.group.payments;
+    },
     filteredPayments() {
       if (this.paymentSearch) {
-        const lowerPaySearch = this.paymentSearch.toLowerCase();
-        return this.payments.filter((pay) => !!pay.editing
-                                          || pay.name.toLowerCase().indexOf(lowerPaySearch) === 0
-                                          || pay.name.toLowerCase().indexOf(` ${lowerPaySearch}`) >= 0);
+        const regex = new RegExp(`\\b${this.paymentSearch}`, 'gi');
+        return this.payments.filter((pay) => !!pay.name?.match(regex));
       }
       return this.payments;
     },
     sortedPayments() {
       return this.filteredPayments.slice().sort((a, b) => {
-        if ((a.when.trim() < b.when.trim()) && a.id) {
+        if ((a.date.trim() < b.date.trim()) && a.id) {
           return 1;
         }
         return -1;
@@ -301,114 +198,60 @@ export default {
     },
     totals() {
       const amounts = {
-        owed: 0,
-        paid: 0,
+        liability: 0,
+        asset: 0,
         balance: 0,
       };
+      let shouldSetBalance = false;
       this.filteredPayments.forEach((payment) => {
-        amounts.owed += Number.isNaN(+payment.owed) ? 0 : +payment.owed;
-        amounts.paid += Number.isNaN(+payment.amount) ? 0 : +payment.amount;
+        amounts.liability += payment.liability;
+        amounts.asset += payment.asset;
+        shouldSetBalance ||= payment.liability !== 0;
       });
-      if (+this.group.owed !== 0) {
-        amounts.balance = +this.group.owed - +this.group.total;
-      }
+      amounts.balance = shouldSetBalance ? amounts.liability - amounts.asset : 0;
       return amounts;
     },
   },
   methods: {
-    undoCopy(pay) {
-      // eslint-disable-next-line
-      if (pay.originalOwed !== undefined) pay.owed = pay.originalOwed;
-      // eslint-disable-next-line
-      if (pay.originalAmount !== undefined) pay.amount = pay.originalAmount;
-      this.$set(pay, 'changed', false);
-    },
-    copyPaidToOwed(pay) {
-      // eslint-disable-next-line
-      pay.originalOwed = pay.owed;
-      // eslint-disable-next-line
-      pay.owed = pay.amount;
-      this.$set(pay, 'changed', true);
-    },
-    copyOwedToPaid(pay) {
-      // eslint-disable-next-line
-      pay.originalAmount = pay.amount;
-      // eslint-disable-next-line
-      pay.amount = pay.owed;
-      this.$set(pay, 'changed', true);
-    },
-    async deletePayment(pay) {
-      const yes = await this.$confirm('Are you sure you want to delete this payment?', {
-        title: 'Warning',
-      });
-      if (yes) {
-        if (pay.id) {
-          await this.service.deletePay(pay.id);
-        }
-        this.payments.splice(this.payments.findIndex((item) => item === pay), 1);
-        this.$emit('updated');
+    toggleEditName(event) {
+      if (this.groupName) {
+        event.stopPropagation();
+        this.editingName = true;
       }
     },
+    paymentUpdated() {
+      this.$emit('updated');
+    },
     async deleteGroup() {
-      const yes = await this.$confirm('Are you sure you want to delete this group and all its entries?', {
-        title: 'Warning',
-      });
-      if (yes && this.group.id) {
+      const yes = await this.$confirm('Are you sure you sure?', { title: 'Warning' });
+      if (yes) {
         await this.service.deleteGroup(this.group.id);
         this.$emit('updated');
       }
     },
-    async getPayments() {
-      if (this.active) {
-        this.payments = await this.service.getPayments(this.group.id);
-      }
-    },
-    isPayValid(pay) {
-      return pay.name.length > 0
-          && pay.when.length > 0
-          && !Number.isNaN(parseFloat(pay.amount))
-          && !Number.isNaN(parseFloat(pay.owed));
-    },
     newPayment() {
-      const d = new Date();
-      const when = [
-        d.getFullYear(),
-        `0${d.getMonth() + 1}`.slice(-2),
-        `0${d.getDate()}`.slice(-2),
+      const date = [
+        new Date().getFullYear(),
+        `0${new Date().getMonth() + 1}`.slice(-2),
+        `0${new Date().getDate()}`.slice(-2),
       ].join('-');
-      this.payments.push({
-        editing: {
-          name: '',
-          when,
-          paygroup: this.group.id,
-          amount: 0,
-          owed: 0,
-        },
-        when: '',
-      });
+      const lastPaymentCurrency = this.payments[this.payments.length - 1]?.currency;
+      this.activePayment = {
+        name: '',
+        date,
+        asset: 0,
+        liability: 0,
+        currency: lastPaymentCurrency ?? 'CAD',
+      };
     },
     async savePay(payment) {
-      if (!this.isPayValid(payment)) return;
-      if (payment.id) {
-        await this.service.updatePayment(payment.id, payment);
-      } else {
-        await this.service.addPayment(payment);
-      }
-      await this.getPayments();
+      if (payment.id) await this.service.updatePayment(payment.id, payment);
+      else await this.service.addPayment(payment);
       this.$emit('updated');
     },
-    toggleEdit(pay, isEditing) {
-      if (!!pay.editing === !!isEditing) return;
-      if (isEditing) {
-        this.payments.forEach((p) => {
-          if (p === pay) this.$set(pay, 'editing', JSON.parse(JSON.stringify(pay)));
-          else if (p.editing) this.$set(p, 'editing', null);
-        });
-      } else if (pay.id) this.$set(pay, 'editing', null);
-      else this.deletePayment(pay);
-    },
-    toggleDelete(pay, isVisible) {
-      this.$set(pay, 'isTrashVisible', isVisible);
+    async deletePay(pay) {
+      await this.service.deletePay(pay.id);
+      this.$emit('updated');
     },
     async updateGroupName() {
       await this.service.updateGroup(this.group.id, { ...this.group, name: this.groupName });
@@ -418,30 +261,3 @@ export default {
   },
 };
 </script>
-<style>
-.row-pay:nth-child(odd) {
-  background: initial !important;
-}
-.payrow-hover-buttons {
-  display:none;
-  position:absolute;
-  right:0;
-}
-.payrow-hover-buttons * {
-  margin-left:5px;
-}
-@media (pointer:fine) {
-  .row-pay:hover .payrow-hover-buttons {
-    display:block;
-  }
-}
-input[type="number"] {
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-</style>

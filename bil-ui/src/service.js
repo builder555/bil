@@ -7,6 +7,8 @@ class MainService {
     } else {
       this.baseUrl = `${fileLocation}`;
     }
+    this.projectId = null;
+    this.payGroupId = null;
   }
 
   async __deleteData(url) {
@@ -49,12 +51,12 @@ class MainService {
     await this.__deleteData(`/projects/${projectId}`);
   }
 
-  async deleteGroup(groupId) {
-    await this.__deleteData(`/groups/${groupId}`);
+  async deleteGroup(id) {
+    await this.__deleteData(`/projects/${this.projectId}/paygroups/${id}`);
   }
 
-  async deletePay(paymentId) {
-    await this.__deleteData(`/payments/${paymentId}`);
+  async deletePay(id) {
+    await this.__deleteData(`/projects/${this.projectId}/paygroups/${this.payGroupId}/payments/${id}`);
   }
 
   async addProject(name) {
@@ -62,23 +64,37 @@ class MainService {
   }
 
   async addGroup(project, name) {
-    await this.__postData('/groups', { project, name });
+    await this.__postData(`/projects/${this.projectId}/paygroups`, { project, name });
   }
 
   async addPayment(payment) {
-    await this.__postData('/payments', payment);
+    await this.__postData(`/projects/${this.projectId}/paygroups/${this.payGroupId}/payments`, {
+      ...payment,
+      asset: Math.round(payment.asset * 100),
+      liability: Math.round(payment.liability * 100),
+    });
   }
 
   async getProjects() {
     return this.__fetchData('/projects');
   }
 
-  async getGroups(projectId) {
-    return this.__fetchData(`/projects/${projectId}/groups`);
+  setActiveGroup(groupId) {
+    this.payGroupId = groupId;
   }
 
-  async getPayments(groupId) {
-    return this.__fetchData(`/groups/${groupId}/payments`);
+  async getProjectDetails(projectId) {
+    const project = await this.__fetchData(`/projects/${projectId}`);
+    project.paygroups.forEach((group) => {
+      group.payments.forEach((pay) => {
+        // eslint-disable-next-line
+        pay.asset /= 100;
+        // eslint-disable-next-line
+        pay.liability /= 100;
+      });
+    });
+    this.projectId = projectId;
+    return project;
   }
 
   async updateProject(id, details) {
@@ -86,11 +102,15 @@ class MainService {
   }
 
   async updateGroup(id, details) {
-    await this.__putData(`/groups/${id}`, details);
+    await this.__putData(`/projects/${this.projectId}/paygroups/${id}`, details);
   }
 
-  async updatePayment(id, details) {
-    await this.__putData(`/payments/${id}`, details);
+  async updatePayment(id, payment) {
+    await this.__putData(`/projects/${this.projectId}/paygroups/${this.payGroupId}/payments/${id}`, {
+      ...payment,
+      asset: Math.round(payment.asset * 100),
+      liability: Math.round(payment.liability * 100),
+    });
   }
 }
 

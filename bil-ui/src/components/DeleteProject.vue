@@ -5,8 +5,7 @@
       color="error"
       class="ml-5 mr-2"
       @click="isDialogOpen=true"
-    >
-      Delete Project <v-icon small right>fa fa-minus</v-icon>
+    ><v-icon small>fa fa-trash-alt</v-icon>
     </v-btn>
     <v-dialog
       v-model="isDialogOpen"

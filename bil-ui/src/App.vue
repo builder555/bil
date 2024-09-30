@@ -41,20 +41,20 @@
                 <v-col cols="6"
                   class="text-right"
                   :class="{
-                    'warning--text': totals.owed > 0,
-                    'primary--text': totals.owed < 0,
+                    'warning--text': totals.liability > 0,
+                    'primary--text': totals.liability < 0,
                   }"
-                >{{totals.owed | currency}}</v-col>
+                >{{totals.liability | currency}}</v-col>
               </v-row>
               <v-row>
                 <v-col cols="6">Paid:</v-col>
                 <v-col cols="6"
                   class="text-right"
                   :class="{
-                    'error--text': totals.paid > 0,
-                    'success--text': totals.paid < 0,
+                    'error--text': totals.asset > 0,
+                    'success--text': totals.asset < 0,
                   }"
-                >{{totals.paid | currency}}</v-col>
+                >{{totals.asset | currency}}</v-col>
               </v-row>
             </v-card>
           </v-col>
@@ -67,7 +67,7 @@
         <v-row class="indigo darken-1 white--text">
           <v-col
             cols="12"
-            md="6"
+            sm="6"
             class="text-left"
           >
             Payment Group
@@ -76,27 +76,9 @@
               @created="getGroups"
             />
           </v-col>
-          <v-col
-            cols="4"
-            md="2"
-            class="text-right"
-          >
-            Balance
-          </v-col>
-          <v-col
-            cols="4"
-            md="2"
-            class="text-right"
-          >
-            Owed
-          </v-col>
-          <v-col
-            cols="4"
-            md="2"
-            class="text-right"
-          >
-            Paid
-          </v-col>
+          <v-col cols="4" sm="2" class="text-right">Balance</v-col>
+          <v-col cols="4" sm="2" class="text-right">Owed</v-col>
+          <v-col cols="4" sm="2" class="text-right">Paid</v-col>
         </v-row>
         <pay-group
           v-for="group in sortedGroups"
@@ -163,7 +145,6 @@ export default {
       }
     },
     groupSearch() {
-      console.log('searching group');
       this.activeGroup = -1;
     },
     '$route.params.id': {
@@ -192,14 +173,17 @@ export default {
     },
     totals() {
       const total = {
-        owed: 0,
-        paid: 0,
+        liability: 0,
+        asset: 0,
         balance: 0,
       };
       this.groups.forEach((group) => {
-        total.owed += +group.owed;
-        total.paid += +group.total;
-        if (+group.owed !== 0) total.balance += +group.owed - +group.total;
+        const { payments } = group;
+        payments.forEach((pay) => {
+          total.liability += +pay.liability;
+          total.asset += +pay.asset;
+          if (+pay.liability !== 0) total.balance += +pay.liability - +pay.asset;
+        });
       });
       return total;
     },
@@ -210,13 +194,13 @@ export default {
         this.groups = [];
         return;
       }
-      this.groups = await this.service.getGroups(this.project);
+      const details = await this.service.getProjectDetails(this.project);
+      this.groups = details.paygroups;
     },
     async getProjects() {
       this.projects = await this.service.getProjects();
     },
     setActiveGroup(groupId) {
-      console.log('set active group');
       if (this.activeGroup === groupId) {
         this.activeGroup = -1;
       } else {
