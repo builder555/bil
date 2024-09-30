@@ -1,3 +1,11 @@
+## Personal finance management
+
+
+> [!CAUTION]
+> **NB:** THIS API IS NOT SECURED!! <br/>
+> IT IS MEANT TO BE A BASIS FOR YOUR OWN IMPLEMENTATION.
+> !!DO NOT USE IN PRODUCTION!!
+
 ### Prerequisites
 
 - Python 3.9
