@@ -25,6 +25,18 @@ def test_can_delete_project(client_with_project):
     assert delete_response.status_code == 200
     response = client.get("/projects")
     assert len(response.json()) == 0
+    get_response = client.get(f"/projects/{project_id}")
+    assert get_response.status_code == 404
+
+
+def test_can_restore_project(client_with_project):
+    client, project_id = client_with_project
+    delete_response = client.delete(f"/projects/{project_id}")
+    assert delete_response.status_code == 200
+    restore_response = client.put(f"/projects/{project_id}/restore")
+    assert restore_response.status_code == 200
+    get_response = client.get(f"/projects/{project_id}")
+    assert get_response.status_code == 200
 
 
 def test_can_update_project_name(client_with_project):
@@ -89,4 +101,9 @@ def test_cannot_delete_same_project_twice(client_with_project):
 
 def test_cannot_get_nonexistent_project(client):
     resp = client.get("/projects/42")
+    assert resp.status_code == 404
+
+
+def test_cannot_restore_nonexistent_project(client):
+    resp = client.put("/projects/42/restore")
     assert resp.status_code == 404

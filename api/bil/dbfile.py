@@ -8,7 +8,8 @@ import glob
 
 
 class DBAdaptor:
-    def __init__(self, path):
+    def __init__(self, path, keep_history=True):
+        self.__keep_history = keep_history
         self._base = path
         self._db_path = os.path.join(self._base, "projects.json")
 
@@ -49,19 +50,27 @@ class DBAdaptor:
         self.__repo_init(project_id)
 
     def __repo_init(self, project_id: int):
+        if not self.__keep_history:
+            return
         project_path = self._get_project_path(project_id)
         os.system(f"git -C {project_path} init")
 
     def __repo_commit(self, project_id: int):
+        if not self.__keep_history:
+            return
         project_path = self._get_project_path(project_id)
         os.system(f"git -C {project_path} add .")
         os.system(f"git -C {project_path} commit -m 'updated'")
 
     def __repo_checkout(self, project_id: int, commit_id: str):
+        if not self.__keep_history:
+            return
         project_path = self._get_project_path(project_id)
         os.system(f"git -C {project_path} checkout {commit_id}")
 
     def __repo_list(self, project_id: int) -> list[dict]:
+        if not self.__keep_history:
+            return []
         project_path = self._get_project_path(project_id)
         resp = os.popen(f'git -C {project_path} log --format="%h %ad"').read().splitlines()
         return [{"id": x.split(" ")[0], "date": x.split(" ")[1]} for x in resp]
@@ -111,6 +120,13 @@ class DBAdaptor:
         if project_id not in projects:
             raise ItemNotFoundError
         projects[project_id].is_deleted = True
+        self._save_projects(projects)
+
+    def restore_project(self, project_id: int):
+        projects = self._get_projects_dict(include_deleted=True)
+        if project_id not in projects:
+            raise ItemNotFoundError
+        projects[project_id].is_deleted = False
         self._save_projects(projects)
 
     def get_project(self, project_id: int) -> ProjectWithPayments:

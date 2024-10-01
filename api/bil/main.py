@@ -74,6 +74,14 @@ async def delete_project(project_id: int, db=Depends(get_db)):
         raise HTTPException(status_code=404)
 
 
+@app.put("/projects/{project_id}/restore")
+async def restore_project(project_id: int, db=Depends(get_db)):
+    try:
+        return db.restore_project(project_id)
+    except ItemNotFoundError:
+        raise HTTPException(status_code=404)
+
+
 @app.get("/projects/{project_id}", response_model=ProjectWithPayments)
 async def get_project(project_id: int, db=Depends(get_db)):
     try:
