@@ -97,14 +97,6 @@ def test_cannot_delete_nonexistent_payment(client_with_paygroup):
     assert resp.status_code == 404
 
 
-def test_cannot_add_payment_without_asset_or_liability(client_with_paygroup):
-    client, project_id, group_id = client_with_paygroup
-    resp = client.post(
-        f"/projects/{project_id}/paygroups/{group_id}/payments", json={"name": "Test Payment", "date": "2022-01-01"}
-    )
-    assert resp.status_code == 422
-
-
 def test_cannot_add_files_to_nonexistent_payment(client_with_payment, small_pdf):
     client, project_id, group_id, _ = client_with_payment
     resp = client.post(

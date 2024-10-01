@@ -8,17 +8,9 @@ import json
 class PaymentInput(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     date: date
-    asset: Optional[int] = 0  # in cents
-    liability: Optional[int] = 0  # in cents
+    asset: Optional[int] = 0  # in microcents
+    liability: Optional[int] = 0  # in microcents
     currency: str = Field(min_length=1, max_length=3)
-
-    @model_validator(mode="after")
-    def must_have_either_asset_or_liability(
-        self,
-    ) -> Self:
-        if self.asset == 0 and self.liability == 0:
-            raise ValueError("Must specify either asset or liability")
-        return self
 
 
 class Payment(PaymentInput):
