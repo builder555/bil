@@ -51,6 +51,7 @@ def test_cannot_update_nonexistent_paygroup(client_with_project):
     resp = client.put(f"/projects/{project_id}/paygroups/42", json={"name": "Test Paygroup"})
     assert resp.status_code == 404
 
+
 def test_paygroup_cannot_have_empty_name(client_with_project):
     client, project_id = client_with_project
     resp = client.post(f"/projects/{project_id}/paygroups", json={"name": ""})
