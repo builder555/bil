@@ -112,6 +112,15 @@ class MainService {
       liability: Math.round(payment.liability * 100),
     });
   }
+
+  async uploadFile(id, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    await fetch(`${this.baseUrl}/projects/${this.projectId}/paygroups/${this.payGroupId}/payments/${id}/files`, {
+      method: 'POST',
+      body: formData,
+    });
+  }
 }
 
 export default new MainService();

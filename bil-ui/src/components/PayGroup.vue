@@ -244,9 +244,10 @@ export default {
         currency: lastPaymentCurrency ?? 'CAD',
       };
     },
-    async savePay(payment) {
+    async savePay(payment, file) {
       if (payment.id) await this.service.updatePayment(payment.id, payment);
       else await this.service.addPayment(payment);
+      if (file) await this.service.uploadFile(payment.id, file);
       this.$emit('updated');
     },
     async deletePay(pay) {

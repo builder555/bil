@@ -11,6 +11,7 @@
     <v-col cols="12" md="6" class="text-left py-2">
       <v-chip x-small class="px-1">{{pay.currency}}</v-chip>
       {{pay.name}}
+      <v-icon v-if="pay.attachment" x-small class="text-right">fa fa-paperclip</v-icon>
     </v-col>
     <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{pay.date}}</v-col>
     <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{pay.liability | currency}}</v-col>
