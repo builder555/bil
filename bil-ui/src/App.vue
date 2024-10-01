@@ -17,14 +17,31 @@
         :return-object="false"
         auto-select-first
       />
-      <delete-project v-if="project" :project="project" @deleted="getProjects()" />
-      <new-project @created="getProjects()"/>
-      <dark-toggle/>
+      <DeleteProject v-if="project" :project="project" @deleted="onProjectDeleted()" />
+      <NewProject @created="getProjects()"/>
+      <DarkToggle/>
     </v-app-bar>
     <v-main v-if="project">
       <v-container>
         <v-row>
-          <v-col cols="12" offset-sm="6" sm="6" offset-md="8" md="4">
+          <v-col cols="12" sm="6" md="8">
+            <v-row>
+              <v-col cols="6">
+                <v-text-field
+                  v-model="searchStartDate"
+                  label="Start Date"
+                  placeholder="YYYY-MM-DD"
+                />
+              </v-col>
+              <v-col cols="6">
+                <v-text-field
+                  label="End Date"
+                  placeholder="YYYY-MM-DD"
+                />
+              </v-col>
+            </v-row>
+          </v-col>
+          <v-col cols="12" sm="6" md="4">
             <v-card class="px-2">
               <v-row>
                 <v-col cols="6">Balance: </v-col>
@@ -59,11 +76,22 @@
             </v-card>
           </v-col>
         </v-row>
-        <v-text-field
-          v-model="groupSearch"
-          label="Search groups"
-          clearable
-        />
+        <v-row class="ma-0 pa-0 mx-sm-n3">
+          <v-col cols="12" sm="6"  class="ma-0 pa-0">
+            <v-text-field class="ma-0 pa-0 mr-sm-3"
+              v-model="groupSearch"
+              label="Search groups"
+              clearable
+            />
+          </v-col>
+          <v-col cols="12" sm="6" class="ma-0 pa-0">
+            <v-text-field class="ma-0 pa-0"
+              v-model="paymentSearch"
+              label="Search Payments"
+              clearable
+            />
+          </v-col>
+        </v-row>
         <v-row class="indigo darken-1 white--text">
           <v-col
             cols="12"
@@ -71,7 +99,7 @@
             class="text-left"
           >
             Payment Group
-            <new-paygroup
+            <NewPaygroup
               :project="project"
               @created="getGroups"
             />
@@ -80,7 +108,7 @@
           <v-col cols="4" sm="2" class="text-right">Owed</v-col>
           <v-col cols="4" sm="2" class="text-right">Paid</v-col>
         </v-row>
-        <pay-group
+        <PayGroup
           v-for="group in sortedGroups"
           :key="`pay-group-${group.id}`"
           :group="group"
@@ -131,9 +159,12 @@ export default {
     activeGroup: -1,
     project: null,
     projects: [],
-    groups: [],
+    rawGroups: [],
     groupSearch: '',
+    paymentSearch: '',
     service: Service,
+    searchStartDate: '',
+    searchEndDate: '',
   }),
   watch: {
     project() {
@@ -153,15 +184,35 @@ export default {
         this.project = +this.$route.params.id;
       },
     },
+
   },
   computed: {
+    groups() {
+      let filteredGroups = JSON.parse(JSON.stringify(this.rawGroups));
+      filteredGroups.forEach((group) => {
+        if (this.searchStartDate) {
+          group.payments = group.payments.filter((pay) => new Date(pay.date) >= new Date(this.searchStartDate))
+        }
+        if (this.searchEndDate) {
+          group.payments = group.payments.filter((pay) => new Date(pay.date) <= new Date(this.searchStartDate))
+        }
+        if (this.paymentSearch) {
+          const regex = new RegExp(`\\b${this.paymentSearch}`, 'gi');
+          group.payments = group.payments.filter((pay) => !!pay.name?.match(regex));
+        }
+      });
+      return filteredGroups;
+    },
     filteredGroups() {
+      let filteredGroups = this.groups;
       if (this.groupSearch) {
-        const lowerGroupSearch = this.groupSearch.toLowerCase();
-        return this.groups.filter((g) => g.name.toLowerCase().indexOf(lowerGroupSearch) === 0
-                                      || g.name.toLowerCase().indexOf(` ${lowerGroupSearch}`) >= 0);
+        const regex = new RegExp(`\\b${this.groupSearch}`, 'gi');
+        filteredGroups = filteredGroups.filter((g) => !!g.name?.match(regex));
       }
-      return this.groups;
+      if (this.searchStartDate || this.searchEndDate || this.paymentSearch) {
+        filteredGroups = filteredGroups.filter((group) => group.payments.length > 0);
+      }
+      return filteredGroups;
     },
     sortedGroups() {
       return this.filteredGroups.slice().sort((a, b) => {
@@ -191,14 +242,20 @@ export default {
   methods: {
     async getGroups() {
       if (!this.project) {
-        this.groups = [];
+        this.rawGroups = [];
         return;
       }
       const details = await this.service.getProjectDetails(this.project);
-      this.groups = details.paygroups;
+      this.rawGroups = details.paygroups;
     },
     async getProjects() {
-      this.projects = await this.service.getProjects();
+      const projects = await this.service.getProjects();
+      this.projects = projects.sort((a, b) => {
+        if (a.name.toLowerCase() < b.name.toLowerCase()) {
+          return -1;
+        }
+        return 1;
+      });
     },
     setActiveGroup(groupId) {
       if (this.activeGroup === groupId) {
@@ -206,6 +263,10 @@ export default {
       } else {
         this.activeGroup = groupId;
       }
+    },
+    onProjectDeleted() {
+      this.getProjects();
+      this.project = null;
     },
   },
   mounted() {
