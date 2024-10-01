@@ -53,7 +53,13 @@ def client() -> TestClient:
 
 @pytest.fixture(scope="session")
 def mock_payment() -> dict:
-    return {"name": "Test Payment", "date": "2022-01-01", "asset": 10000, "liability": 15000, "currency": "USD"}
+    return {
+        "name": "Test Payment",
+        "date": "2022-01-01",
+        "asset": 1500000000,  # $15
+        "liability": 30000000,  # $0.30
+        "currency": "USD",
+    }
 
 
 @pytest.fixture(scope="session")
