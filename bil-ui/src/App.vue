@@ -135,13 +135,13 @@
 </template>
 
 <script>
-import PayGroup from '@/components/PayGroup.vue';
-import DarkToggle from '@/components/DarkToggle.vue';
-import NewProject from '@/components/NewProject.vue';
-import DeleteProject from '@/components/DeleteProject.vue';
-import NewPaygroup from '@/components/NewPaygroup.vue';
-import { currency } from '@/assets/constants';
-import Service from '@/service';
+import PayGroup from './components/PayGroup.vue';
+import DarkToggle from './components/DarkToggle.vue';
+import NewProject from './components/NewProject.vue';
+import DeleteProject from './components/DeleteProject.vue';
+import NewPaygroup from './components/NewPaygroup.vue';
+import { currency } from './assets/constants';
+import Service from './service';
 
 export default {
   name: 'App',
