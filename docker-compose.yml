@@ -3,6 +3,6 @@ services:
     build: .
     container_name: bil
     volumes:
-      - ./api:/app
+      - ./api/data:/app/data
     ports:
       - "8000:8000"
