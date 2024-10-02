@@ -9,7 +9,7 @@ class PaymentInput(BaseModel):
     date: date
     asset: Optional[int] = Field(default=0, description="Amount in microcents")
     liability: Optional[int] = Field(default=0, description="Amount in microcents")
-    currency: str = Field(min_length=1, max_length=3, example="USD")
+    currency: str = Field(min_length=1, max_length=3, json_schema_extra={"example": "USD"})
 
 
 class Payment(PaymentInput):
@@ -18,7 +18,7 @@ class Payment(PaymentInput):
 
 
 class PaygroupInput(BaseModel):
-    name: str = Field(min_length=1, max_length=255)
+    name: str = Field(min_length=1, max_length=255, json_schema_extra={"example": "Renovation Expenses"})
 
 
 class Paygroup(PaygroupInput):
@@ -27,7 +27,7 @@ class Paygroup(PaygroupInput):
 
 
 class ProjectInput(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=255, json_schema_extra={"example": "Household Budget"})
 
 
 class ProjectResponse(ProjectInput):
