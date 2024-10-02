@@ -26,16 +26,24 @@
               <v-col>
                 <v-text-field type="number" v-model="localPayment.liability" label="Owed" inputmode="decimal">
                   <template v-slot:prepend-inner>
-                    <v-icon x-small :class="['fa', localPayment.liability < 0 ? 'fa-plus-circle' : 'fa-minus-circle']"
-                      @click="localPayment.liability = -localPayment.liability" />
+                    <v-icon
+                      x-small
+                      tabindex="-1"
+                      :class="['fa', localPayment.liability < 0 ? 'fa-plus-circle' : 'fa-minus-circle']"
+                      @click="localPayment.liability = -localPayment.liability"
+                    />
                   </template>
                 </v-text-field>
               </v-col>
               <v-col>
                 <v-text-field type="number" v-model="localPayment.asset" label="Paid" inputmode="decimal">
                   <template v-slot:prepend-inner>
-                    <v-icon x-small :class="['fa', localPayment.asset < 0 ? 'fa-plus-circle' : 'fa-minus-circle']"
-                      @click="localPayment.asset = -localPayment.asset" />
+                    <v-icon
+                      x-small
+                      tabindex="-1"
+                      :class="['fa', localPayment.asset < 0 ? 'fa-plus-circle' : 'fa-minus-circle']"
+                      @click="localPayment.asset = -localPayment.asset"
+                      />
                   </template>
                 </v-text-field>
               </v-col>
