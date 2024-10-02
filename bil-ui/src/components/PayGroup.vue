@@ -144,8 +144,8 @@
 <script>
 import { currency } from '@/assets/constants';
 import Service from '@/service';
-import PaymentDetails from '@/components/PaymentDetails.vue';
-import PaymentRow from '@/components/PaymentRow.vue';
+import PaymentDetails from './PaymentDetails.vue';
+import PaymentRow from './PaymentRow.vue';
 
 export default {
   name: 'PayGroup',
@@ -250,8 +250,8 @@ export default {
       if (file) await this.service.uploadFile(payment.id, file);
       this.$emit('updated');
     },
-    async deletePay(pay) {
-      await this.service.deletePay(pay.id);
+    async deletePay(id) {
+      await this.service.deletePay(id);
       this.$emit('updated');
     },
     async updateGroupName() {

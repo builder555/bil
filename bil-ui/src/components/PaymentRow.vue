@@ -46,7 +46,7 @@
         small
         color="error"
         class="mt-1"
-        @click.stop="deletePayment(pay)"
+        @click.stop="deletePayment(pay.id)"
       >
         <v-icon>fa fa-trash-alt</v-icon>
       </v-btn>
@@ -84,10 +84,10 @@ export default {
       if (pay.originalAmount !== undefined) pay.asset = pay.originalAmount;
       this.$set(pay, 'changed', false);
     },
-    async deletePayment(pay) {
+    async deletePayment(id) {
       const yes = await this.$confirm('Are you sure you sure?', { title: 'Warning' });
       if (yes) {
-        this.$emit('delete', pay.id);
+        this.$emit('delete', id);
       }
     },
     async savePay(payment) {
