@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 class MainService {
   constructor() {
-    const fileLocation = document.location.href.substr(0, document.location.href.lastIndexOf('/'));
+    const fileLocation = document.location.href.substring(0, document.location.href.lastIndexOf('/'));
     if (process.env.NODE_ENV === 'development') {
       this.baseUrl = `${window.location.protocol}//${window.location.hostname}:8000`;
     } else {
@@ -9,6 +9,7 @@ class MainService {
     }
     this.projectId = null;
     this.payGroupId = null;
+    this.storedCurrencyPrecision = 100000000;
   }
 
   async __deleteData(url) {
@@ -70,8 +71,8 @@ class MainService {
   async addPayment(payment) {
     await this.__postData(`/projects/${this.projectId}/paygroups/${this.payGroupId}/payments`, {
       ...payment,
-      asset: Math.round(payment.asset * 100),
-      liability: Math.round(payment.liability * 100),
+      asset: Math.round(payment.asset * this.storedCurrencyPrecision),
+      liability: Math.round(payment.liability * this.storedCurrencyPrecision),
     });
   }
 
@@ -87,10 +88,8 @@ class MainService {
     const project = await this.__fetchData(`/projects/${projectId}`);
     project.paygroups.forEach((group) => {
       group.payments.forEach((pay) => {
-        // eslint-disable-next-line
-        pay.asset /= 100;
-        // eslint-disable-next-line
-        pay.liability /= 100;
+        pay.asset /= this.storedCurrencyPrecision;
+        pay.liability /= this.storedCurrencyPrecision;
       });
     });
     this.projectId = projectId;
@@ -108,8 +107,8 @@ class MainService {
   async updatePayment(id, payment) {
     await this.__putData(`/projects/${this.projectId}/paygroups/${this.payGroupId}/payments/${id}`, {
       ...payment,
-      asset: Math.round(payment.asset * 100),
-      liability: Math.round(payment.liability * 100),
+      asset: Math.round(payment.asset * this.storedCurrencyPrecision),
+      liability: Math.round(payment.liability * this.storedCurrencyPrecision),
     });
   }
 
