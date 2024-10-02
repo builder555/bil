@@ -1,16 +1,15 @@
 from datetime import date
 from typing import Optional
-from pydantic import BaseModel, model_validator, Field
-from typing_extensions import Self
+from pydantic import BaseModel, Field
 import json
 
 
 class PaymentInput(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     date: date
-    asset: Optional[int] = 0  # in microcents
-    liability: Optional[int] = 0  # in microcents
-    currency: str = Field(min_length=1, max_length=3)
+    asset: Optional[int] = Field(default=0, description="Amount in microcents")
+    liability: Optional[int] = Field(default=0, description="Amount in microcents")
+    currency: str = Field(min_length=1, max_length=3, example="USD")
 
 
 class Payment(PaymentInput):
