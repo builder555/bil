@@ -1,5 +1,6 @@
-## Personal finance management
+## Budget Insight Ledger
 
+A simple bookkeeping and finance management application.
 
 > [!CAUTION]
 > **NB:** THIS API IS NOT SECURED!! <br/>
@@ -8,13 +9,13 @@
 
 ### Prerequisites
 
-- Python 3.9
+- Python 3.10
 - Poetry
 - libmagic:
 ```shell
-brew install libmagic
-# or
 sudo apt install libmagic1
+# or
+brew install libmagic
 ```
 
 ### Installation
@@ -26,18 +27,16 @@ poetry install
 ### Run
 
 ```bash
-poetry shell
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### Development
 ```bash
 poetry install
-poetry shell
 # to run tests once:
-pytest -v
+poetry run pytest -v
 # to monitor files and re-run tests when they change:
-ptw --runner 'pytest -v'
+poetry run ptw --runner 'pytest -v'
 # to format all files:
-black .
+poetry run black .
 ```
