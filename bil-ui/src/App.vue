@@ -188,13 +188,13 @@ export default {
   },
   computed: {
     groups() {
-      let filteredGroups = JSON.parse(JSON.stringify(this.rawGroups));
+      const filteredGroups = JSON.parse(JSON.stringify(this.rawGroups));
       filteredGroups.forEach((group) => {
         if (this.searchStartDate) {
-          group.payments = group.payments.filter((pay) => new Date(pay.date) >= new Date(this.searchStartDate))
+          group.payments = group.payments.filter((pay) => new Date(pay.date) >= new Date(this.searchStartDate));
         }
         if (this.searchEndDate) {
-          group.payments = group.payments.filter((pay) => new Date(pay.date) <= new Date(this.searchStartDate))
+          group.payments = group.payments.filter((pay) => new Date(pay.date) <= new Date(this.searchStartDate));
         }
         if (this.paymentSearch) {
           const regex = new RegExp(`\\b${this.paymentSearch}`, 'gi');
