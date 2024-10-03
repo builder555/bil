@@ -4,37 +4,9 @@
       small
       color="error"
       class="ml-5 mr-2"
-      @click="isDialogOpen=true"
+      @click="confirmDelete"
     ><v-icon small>fa fa-trash-alt</v-icon>
     </v-btn>
-    <v-dialog
-      v-model="isDialogOpen"
-      max-width="290"
-    >
-      <v-card>
-        <v-card-title class="headline">Are you sure?</v-card-title>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-
-          <v-btn
-            color="success"
-            text
-            @click="closeDialog(false)"
-          >
-            No
-          </v-btn>
-
-          <v-btn
-            color="error"
-            text
-            @click="closeDialog(true)"
-          >
-            Yes
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </span>
 </template>
 <script>
@@ -49,13 +21,12 @@ export default {
     service: Service,
   }),
   methods: {
-    async closeDialog(isSave) {
-      if (isSave) {
+    async confirmDelete() {
+      const yes = await this.$confirm('Delete this project?', { title: 'Warning' });
+      if (yes) {
         await this.service.deleteProject(this.project);
         this.$emit('deleted');
       }
-      this.projectName = '';
-      this.isDialogOpen = false;
     },
   },
 };
