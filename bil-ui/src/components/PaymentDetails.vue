@@ -104,10 +104,7 @@ export default {
       return this.localPayment?.name.length > 0
         && isDateValid
         && !Number.isNaN(parseFloat(this.localPayment?.asset))
-        && !Number.isNaN(parseFloat(this.localPayment?.liability))
-        && (
-          this.localPayment.asset !== 0 || this.localPayment.liability !== 0
-        );
+        && !Number.isNaN(parseFloat(this.localPayment?.liability));
     },
     url() {
       const { baseUrl, projectId, payGroupId } = this.service;
