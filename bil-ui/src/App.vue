@@ -18,7 +18,7 @@
         auto-select-first
       />
       <DeleteProject v-if="project" :project="project" @deleted="onProjectDeleted()" />
-      <NewProject @created="getProjects()"/>
+      <NewProject v-else @created="getProjects()"/>
       <DarkToggle/>
     </v-app-bar>
     <v-main v-if="project">
@@ -233,8 +233,8 @@ export default {
         payments.forEach((pay) => {
           total.liability += +pay.liability;
           total.asset += +pay.asset;
-          if (+pay.liability !== 0) total.balance += +pay.liability - +pay.asset;
         });
+        if (total.liability !== 0) total.balance = total.liability - total.asset;
       });
       return total;
     },
@@ -264,21 +264,22 @@ export default {
         this.activeGroup = groupId;
       }
     },
-    onProjectDeleted() {
-      this.getProjects();
+    async onProjectDeleted() {
+      await this.getProjects();
       this.project = null;
     },
   },
-  mounted() {
-    this.getProjects();
+  async mounted() {
+    await this.getProjects();
   },
 };
 </script>
 <style scoped>
 .pay-group:nth-child(odd) {
-  background:initial !important;
+  background: initial !important;
 }
-.pay-group.is-active ~ .pay-group:not(.is-active){
+
+.pay-group.is-active~.pay-group:not(.is-active) {
   opacity: 0.3;
 }
 </style>
