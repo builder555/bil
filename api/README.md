@@ -21,6 +21,7 @@ brew install libmagic
 ### Installation
 
 ```bash
+poetry config virtualenvs.in-project true --local
 poetry install
 ```
 
