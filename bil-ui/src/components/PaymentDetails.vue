@@ -25,7 +25,10 @@
               </v-col>
               <v-col>
                 <v-text-field type="number" v-model="localPayment.liability" label="Owed" inputmode="decimal">
-                  <template v-slot:prepend-inner>
+                  <template
+                    v-if="isTouchDevice"
+                    v-slot:prepend-inner
+                  >
                     <v-icon
                       x-small
                       tabindex="-1"
@@ -37,7 +40,10 @@
               </v-col>
               <v-col>
                 <v-text-field type="number" v-model="localPayment.asset" label="Paid" inputmode="decimal">
-                  <template v-slot:prepend-inner>
+                  <template
+                    v-if="isTouchDevice"
+                    v-slot:prepend-inner
+                  >
                     <v-icon
                       x-small
                       tabindex="-1"
@@ -99,6 +105,11 @@ export default {
     service: Service,
   }),
   computed: {
+    isTouchDevice() {
+      return (('ontouchstart' in window)
+        || (navigator.maxTouchPoints > 0)
+        || (navigator.msMaxTouchPoints > 0));
+    },
     isPayValid() {
       const isDateValid = (new Date(this.localPayment?.date)).toString().toLowerCase() !== 'invalid date';
       return this.localPayment?.name.length > 0
