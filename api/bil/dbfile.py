@@ -72,8 +72,8 @@ class DBAdaptor:
         if not self.__keep_history:
             return []
         project_path = self._get_project_path(project_id)
-        resp = os.popen(f'git -C {project_path} log --format="%h %ad"').read().splitlines()
-        return [{"id": x.split(" ")[0], "date": x.split(" ")[1]} for x in resp]
+        resp = os.popen(f'git -C {project_path} log --format="%h|%ad"').read().splitlines()
+        return [{"id": x.split("|")[0], "date": x.split("|")[1]} for x in resp]
 
     def _save_paygroups(self, project_id: int, paygroups: dict[int, Paygroup]):
         payfile_path = self._get_payfile_path(project_id)
