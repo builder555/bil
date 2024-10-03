@@ -183,7 +183,7 @@ export default {
     },
     filteredPayments() {
       if (this.paymentSearch) {
-        const regex = new RegExp(`\\b${this.paymentSearch}`, 'gi');
+        const regex = new RegExp(`(?<![A-Za-z])${this.paymentSearch}`, 'gi');
         return this.payments.filter((pay) => !!pay.name?.match(regex));
       }
       return this.payments;
@@ -209,7 +209,11 @@ export default {
         shouldSetBalance ||= payment.liability !== 0;
       });
       amounts.balance = shouldSetBalance ? amounts.liability - amounts.asset : 0;
-      return amounts;
+      return {
+        liability: Math.round(10000 * amounts.liability) / 10000,
+        asset: Math.round(10000 * amounts.asset) / 10000,
+        balance: Math.round(10000 * amounts.balance) / 10000,
+      };
     },
   },
   methods: {
