@@ -62,6 +62,21 @@ def test_can_add_files_to_payment(client_with_payment, small_pdf, small_jpeg):
     assert added_jpeg_resp.status_code == 200
 
 
+def test_added_files_only_show_for_payment_to_which_they_are_added(client_with_paygroup, mock_payment, small_pdf):
+    client, project_id, group_id = client_with_paygroup
+    for _ in range(12):
+        client.post(f"/projects/{project_id}/paygroups/{group_id}/payments", json=mock_payment)
+    url = f"/projects/{project_id}/paygroups/{group_id}/payments/10/files"
+    client.post(url, files={"file": ("test.pdf", small_pdf, "application/pdf")})
+    project_resp = client.get(f"/projects/{project_id}").json()
+    payments = project_resp["paygroups"][0]["payments"]
+    for payment in payments:
+        if payment["id"] == 10:
+            assert payment["attachment"] == f"{group_id}_10.pdf"
+        else:
+            assert not payment["attachment"]
+
+
 def test_can_get_files_from_payment(client_with_payment, small_pdf):
     client, project_id, group_id, payment_id = client_with_payment
     url = f"/projects/{project_id}/paygroups/{group_id}/payments/{payment_id}/files"

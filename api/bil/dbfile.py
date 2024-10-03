@@ -131,7 +131,7 @@ class DBAdaptor:
 
     def get_project(self, project_id: int) -> ProjectWithPayments:
         def find_attachments(project_id: int, group_id: int, pay_id: int) -> bool:
-            attachments = glob.glob(os.path.join(self._get_project_path(project_id), f"{group_id}_{pay_id}*"))
+            attachments = glob.glob(os.path.join(self._get_project_path(project_id), f"{group_id}_{pay_id}.*"))
             file_name = ""
             if attachments:
                 file_name = os.path.basename(attachments[0])
