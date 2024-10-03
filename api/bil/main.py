@@ -101,7 +101,7 @@ async def get_project_history(project_id: int, db=Depends(get_db)):
 
 
 @app.get("/projects/{project_id}/history/{history_id}", response_model=ProjectWithPayments)
-async def get_project_history_by_id(project_id: int, history_id: str, db=Depends(get_db)):
+async def get_past_project_state(project_id: int, history_id: str, db=Depends(get_db)):
     try:
         return db.get_project_state(project_id, history_id)
     except ItemNotFoundError:
