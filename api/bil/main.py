@@ -12,6 +12,7 @@ from bil.datamodels import (
     NewItemResponse,
 )
 from bil.dbfile import DBAdaptor, ItemNotFoundError
+import uvicorn
 import magic
 import os
 
@@ -200,3 +201,6 @@ def get_index_html(id: int):
     return FileResponse("./static/index.html")
 
 app.mount("/", StaticFiles(directory="static", html=True, check_dir=False), name="static")
+
+def start_app():
+    uvicorn.run("bil.main:app", host="0.0.0.0", port=8000, reload=True)
