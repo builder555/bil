@@ -1,52 +1,52 @@
 <template>
   <v-row
-    v-if="pay"
+    v-if="localPay"
     class="row-pay secondary"
     v-touch="{
-      left: () => toggleDelete(pay, true),
-      right: () => toggleDelete(pay, false),
+      left: () => toggleDelete(localPay, true),
+      right: () => toggleDelete(localPay, false),
     }"
-    @click="toggleEdit(pay)"
+    @click="toggleEdit(localPay)"
   >
     <v-col cols="12" md="6" class="text-left py-2">
-      <v-chip x-small class="px-1">{{pay.currency}}</v-chip>
-      {{pay.name}}
-      <v-icon v-if="pay.attachment" x-small class="text-right">fa fa-paperclip</v-icon>
+      <v-chip x-small class="px-1">{{localPay.currency}}</v-chip>
+      {{localPay.name}}
+      <v-icon v-if="localPay.attachment" x-small class="text-right">fa fa-paperclip</v-icon>
     </v-col>
-    <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{pay.date}}</v-col>
-    <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{pay.liability | currency}}</v-col>
-    <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{pay.asset | currency}}</v-col>
+    <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{localPay.date}}</v-col>
+    <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{localPay.liability | currency}}</v-col>
+    <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{localPay.asset | currency}}</v-col>
     <div
       class="payrow-hover-buttons"
       :class="{
-        'd-block': pay.isTrashVisible
+        'd-block': localPay.isTrashVisible
       }"
     >
       <v-btn
-        v-show="pay.liability !== pay.asset || pay.changed"
+        v-show="localPay.liability !== localPay.asset || localPay.changed"
         small
-        :color="pay.changed ? 'warning' : 'info'"
+        :color="localPay.changed ? 'warning' : 'info'"
         class="mt-1"
-        @click.stop="pay.changed ? undoCopy(pay) : copyPaidToOwed(pay)"
+        @click.stop="localPay.changed ? undoCopy(localPay) : copyPaidToOwed(localPay)"
       >
-        <v-icon v-if="!pay.changed">far fa-arrow-alt-circle-left</v-icon>
+        <v-icon v-if="!localPay.changed">far fa-arrow-alt-circle-left</v-icon>
         <v-icon v-else>fas fa-times</v-icon>
       </v-btn>
       <v-btn
-        v-show="pay.liability !== pay.asset || pay.changed"
+        v-show="localPay.liability !== localPay.asset || localPay.changed"
         small
         color="info"
         class="mt-1"
-        @click.stop="pay.changed ? savePay(pay) :copyOwedToPaid(pay)"
+        @click.stop="localPay.changed ? savePay(localPay) :copyOwedToPaid(localPay)"
       >
-        <v-icon v-if="!pay.changed">far fa-arrow-alt-circle-right</v-icon>
+        <v-icon v-if="!localPay.changed">far fa-arrow-alt-circle-right</v-icon>
         <v-icon v-else>fas fa-check</v-icon>
       </v-btn>
       <v-btn
         small
         color="error"
         class="mt-1"
-        @click.stop="deletePayment(pay.id)"
+        @click.stop="deletePayment(localPay.id)"
       >
         <v-icon>fa fa-trash-alt</v-icon>
       </v-btn>
@@ -62,25 +62,30 @@ export default {
   filters: {
     currency,
   },
+  data: () => ({
+    localPay: null,
+  }),
+  watch: {
+    pay: {
+      immediate: true,
+      handler() {
+        this.localPay = JSON.parse(JSON.stringify(this.pay));
+      },
+    },
+  },
   methods: {
     copyPaidToOwed(pay) {
-      // eslint-disable-next-line
       pay.originalOwed = pay.liability;
-      // eslint-disable-next-line
       pay.liability = pay.asset;
       this.$set(pay, 'changed', true);
     },
     copyOwedToPaid(pay) {
-      // eslint-disable-next-line
       pay.originalAmount = pay.asset;
-      // eslint-disable-next-line
       pay.asset = pay.liability;
       this.$set(pay, 'changed', true);
     },
     undoCopy(pay) {
-      // eslint-disable-next-line
       if (pay.originalOwed !== undefined) pay.liability = pay.originalOwed;
-      // eslint-disable-next-line
       if (pay.originalAmount !== undefined) pay.asset = pay.originalAmount;
       this.$set(pay, 'changed', false);
     },
