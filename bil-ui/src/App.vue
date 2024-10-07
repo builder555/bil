@@ -31,12 +31,19 @@
                   v-model="searchStartDate"
                   label="Start Date"
                   placeholder="YYYY-MM-DD"
+                  v-mask="'####-##-##'"
+                  inputmode="numeric"
+                  clearable
                 />
               </v-col>
               <v-col cols="6">
                 <v-text-field
+                  v-model="searchEndDate"
                   label="End Date"
                   placeholder="YYYY-MM-DD"
+                  v-mask="'####-##-##'"
+                  inputmode="numeric"
+                  clearable
                 />
               </v-col>
             </v-row>
@@ -135,6 +142,7 @@
 </template>
 
 <script>
+import { mask } from 'vue-the-mask';
 import PayGroup from './components/PayGroup.vue';
 import DarkToggle from './components/DarkToggle.vue';
 import NewProject from './components/NewProject.vue';
@@ -152,6 +160,7 @@ export default {
     DeleteProject,
     NewPaygroup,
   },
+  directives: { mask },
   filters: {
     currency,
   },
