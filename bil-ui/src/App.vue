@@ -193,17 +193,16 @@ export default {
         this.project = +this.$route.params.id;
       },
     },
-
   },
   computed: {
     groups() {
       const filteredGroups = JSON.parse(JSON.stringify(this.rawGroups));
       filteredGroups.forEach((group) => {
-        if (this.searchStartDate) {
+        if (this.searchStartDate.length >= 10) {
           group.payments = group.payments.filter((pay) => new Date(pay.date) >= new Date(this.searchStartDate));
         }
-        if (this.searchEndDate) {
-          group.payments = group.payments.filter((pay) => new Date(pay.date) <= new Date(this.searchStartDate));
+        if (this.searchEndDate.length >= 10) {
+          group.payments = group.payments.filter((pay) => new Date(pay.date) <= new Date(this.searchEndDate));
         }
         if (this.paymentSearch) {
           const regex = new RegExp(`(?<![A-Za-z])${this.paymentSearch}`, 'gi');
