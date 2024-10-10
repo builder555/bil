@@ -25,7 +25,10 @@ jobs:
         poetry install
 
     - name: Run pytest
-      run: poetry run pytest
+      run: |
+        git config --global user.name "bil" 
+        git config --global user.email "bil@bil.local"
+        poetry run pytest
 
     - name: Run flake8
       run: poetry run flake8
