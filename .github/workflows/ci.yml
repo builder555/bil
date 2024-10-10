@@ -122,6 +122,8 @@ jobs:
           yarn
           yarn build
           cd ..
+          pwd
+          ls -l bil-ui/
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to Docker Hub
