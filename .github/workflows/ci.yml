@@ -80,7 +80,7 @@ jobs:
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add pyproject.toml
+        git add api/pyproject.toml
         git commit -m "chore: bump version to ${{ needs.semver-action.outputs.tag }}"
         git tag ${{ needs.semver-action.outputs.tag }}
     
