@@ -1,9 +1,10 @@
-import random
 import pytest
 from fastapi.testclient import TestClient
-from bil.main import app, get_db
+from bil.main import app
+from bil.main import get_db
 from bil.dbfile import DBAdaptor
-import os, shutil
+import os
+import shutil
 import base64
 
 

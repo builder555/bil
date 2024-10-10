@@ -36,7 +36,7 @@ def test_can_update_paygroup(client_with_paygroup):
 
 
 def test_cannot_add_paygroup_to_nonexistent_project(client):
-    resp = client.post(f"/projects/42/paygroups", json={"name": "Test Paygroup"})
+    resp = client.post("/projects/42/paygroups", json={"name": "Test Paygroup"})
     assert resp.status_code == 404
 
 
