@@ -50,30 +50,28 @@
           </v-col>
           <v-col cols="12" sm="6" md="4">
             <v-card class="px-2">
-              <v-row>
-                <v-col cols="6">Balance: </v-col>
+              <v-row class="pa-0">
+                <v-col cols="12" class="pb-1 text-center">Group Totals</v-col>
+                <v-col cols="12" class="pt-0"><hr></v-col>
+                <v-col cols="6" class="py-0">Balance: </v-col>
                 <v-col cols="6"
-                  class="text-right"
+                  class="text-right py-0"
                   :class="{
                     'warning--text': totals.balance > 0,
                     'primary--text': totals.balance < 0,
                   }"
                 >{{totals.balance | currency}}</v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="6">Owed:</v-col>
+                <v-col cols="6" class="py-0">Owed:</v-col>
                 <v-col cols="6"
-                  class="text-right"
+                  class="text-right py-0"
                   :class="{
                     'warning--text': totals.liability > 0,
                     'primary--text': totals.liability < 0,
                   }"
                 >{{totals.liability | currency}}</v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="6">Paid:</v-col>
+                <v-col cols="6" class="py-0">Paid:</v-col>
                 <v-col cols="6"
-                  class="text-right"
+                  class="text-right py-0"
                   :class="{
                     'error--text': totals.asset > 0,
                     'success--text': totals.asset < 0,
@@ -196,7 +194,15 @@ export default {
   },
   computed: {
     groups() {
-      const filteredGroups = JSON.parse(JSON.stringify(this.rawGroups));
+      let filteredGroups = JSON.parse(JSON.stringify(this.rawGroups));
+      if (this.groupSearch) {
+        const regex = new RegExp(`(?<![A-Za-z])${this.groupSearch}`, 'gi');
+        filteredGroups = filteredGroups.filter((g) => !!g.name?.match(regex));
+      }
+      if (this.searchStartDate || this.searchEndDate || this.paymentSearch) {
+        filteredGroups = filteredGroups.filter((group) => group.payments.length > 0);
+      }
+
       filteredGroups.forEach((group) => {
         if (this.searchStartDate.length >= 10) {
           group.payments = group.payments.filter((pay) => new Date(pay.date) >= new Date(this.searchStartDate));
@@ -211,19 +217,8 @@ export default {
       });
       return filteredGroups;
     },
-    filteredGroups() {
-      let filteredGroups = this.groups;
-      if (this.groupSearch) {
-        const regex = new RegExp(`(?<![A-Za-z])${this.groupSearch}`, 'gi');
-        filteredGroups = filteredGroups.filter((g) => !!g.name?.match(regex));
-      }
-      if (this.searchStartDate || this.searchEndDate || this.paymentSearch) {
-        filteredGroups = filteredGroups.filter((group) => group.payments.length > 0);
-      }
-      return filteredGroups;
-    },
     sortedGroups() {
-      return this.filteredGroups.slice().sort((a, b) => {
+      return this.groups.slice().sort((a, b) => {
         if (a.name.toLowerCase() < b.name.toLowerCase()) {
           return -1;
         }
@@ -238,11 +233,18 @@ export default {
       };
       this.groups.forEach((group) => {
         const { payments } = group;
+        let groupBalance = 0;
+        let groupAsset = 0;
+        let groupLiability = 0;
         payments.forEach((pay) => {
-          total.liability += +pay.liability;
-          total.asset += +pay.asset;
+          groupLiability += +pay.liability;
+          groupAsset += +pay.asset;
         });
-        if (total.liability !== 0) total.balance = total.liability - total.asset;
+        groupBalance += groupLiability - groupAsset;
+        // only count groups that have "owed"(liability) and "paid"(asset) values
+        if (Math.round(groupLiability * 100000000) !== 0) total.balance += groupBalance;
+        total.liability += groupLiability;
+        total.asset += groupAsset;
       });
       return total;
     },
