@@ -115,6 +115,7 @@ jobs:
           poetry export --format=requirements.txt --output=requirements.txt --without-hashes --without dev
           cd ..
           cd bil-ui
+          yarn
           yarn build
           cd ..
       - name: Set up Docker Buildx
