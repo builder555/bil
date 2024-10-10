@@ -71,8 +71,10 @@ jobs:
 
     - name: Update pyproject.toml version
       run: |
+        cd api
         pip install poetry
         poetry version ${{ needs.semver-action.outputs.version }}
+        cd ..
 
     - name: Commit version changes
       run: |
