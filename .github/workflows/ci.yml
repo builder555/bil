@@ -6,104 +6,8 @@ on:
       - master
 
 jobs:
-  test-and-lint:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./api
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Install dependencies
-      run: |
-        pip install poetry
-        poetry install
-
-    - name: Run pytest
-      run: |
-        git config --global user.name "bil" 
-        git config --global user.email "bil@bil.local"
-        poetry run pytest
-
-    - name: Run flake8
-      run: poetry run flake8
-
-  semver-action:
-    needs: test-and-lint
-    outputs:
-      tag: ${{ steps.semver-action.outputs.tag }}
-      version: ${{ steps.semver-action.outputs.version }}
-      release_notes: ${{ steps.semver-action.outputs.release_notes }}
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Semver Action
-      id: semver-action
-      run: python .github/scripts/semver.py
-  
-  build-and-release:
-    needs: semver-action
-    runs-on: ubuntu-latest
-    if: needs.semver-action.outputs.version != ''
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Update pyproject.toml version
-      run: |
-        cd api
-        pip install poetry
-        poetry version ${{ needs.semver-action.outputs.version }}
-        cd ..
-
-    - name: Commit version changes
-      run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git add api/pyproject.toml
-        git commit -m "chore: bump version to ${{ needs.semver-action.outputs.tag }}"
-        git tag ${{ needs.semver-action.outputs.tag }}
-    
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ github.ref }}
-        tags: true
-    
-    - name: Create Release
-      id: create-release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: ${{ needs.semver-action.outputs.tag }}
-        body: ${{ needs.semver-action.outputs.release_notes }}
-
 
   build-and-push:
-    needs:
-      - build-and-release
-      - semver-action
-    if: needs.semver-action.outputs.version != ''
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -123,7 +27,6 @@ jobs:
           yarn build
           cd ..
           pwd
-          ls -l bil-ui/
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to Docker Hub
@@ -131,9 +34,18 @@ jobs:
         with:
           username: builder555
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Verify build context contents
+        run: |
+          pwd
+          ls -l
+          echo "bil-ui/ contents:"
+          ls -l bil-ui/
+          echo "api/ contents:"
+          ls -l api/
       - name: Build and push multi-platform Docker image
         uses: docker/build-push-action@v5
         with:
+          context: .
           push: true
           tags: builder555/bil:latest
           platforms: linux/amd64,linux/arm64,linux/arm/v7
