@@ -17,7 +17,7 @@ Stores database in json files, each project is a git repo, allowing you to undo 
 - [ ] roll back to a previous state
 - [ ] passcode authentication
 - [ ] calendar view for date inputs
-
+- [ ] migrations for database changes preserving rollback
 
 ### Run
 
