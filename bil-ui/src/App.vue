@@ -65,18 +65,18 @@
                 <v-col cols="6"
                   class="text-right py-0"
                   :class="{
-                    'warning--text': totals.liability > 0,
-                    'primary--text': totals.liability < 0,
+                    'warning--text': totals.owed > 0,
+                    'primary--text': totals.owed < 0,
                   }"
-                >{{totals.liability | currency}}</v-col>
+                >{{totals.owed | currency}}</v-col>
                 <v-col cols="6" class="py-0">Paid:</v-col>
                 <v-col cols="6"
                   class="text-right py-0"
                   :class="{
-                    'error--text': totals.asset > 0,
-                    'success--text': totals.asset < 0,
+                    'error--text': totals.paid > 0,
+                    'success--text': totals.paid < 0,
                   }"
-                >{{totals.asset | currency}}</v-col>
+                >{{totals.paid | currency}}</v-col>
               </v-row>
             </v-card>
           </v-col>
@@ -227,24 +227,24 @@ export default {
     },
     totals() {
       const total = {
-        liability: 0,
-        asset: 0,
+        owed: 0,
+        paid: 0,
         balance: 0,
       };
       this.groups.forEach((group) => {
         const { payments } = group;
         let groupBalance = 0;
-        let groupAsset = 0;
-        let groupLiability = 0;
+        let groupPaid = 0;
+        let groupOwed = 0;
         payments.forEach((pay) => {
-          groupLiability += +pay.liability;
-          groupAsset += +pay.asset;
+          groupOwed += +pay.owed;
+          groupPaid += +pay.paid;
         });
-        groupBalance += groupLiability - groupAsset;
-        // only count groups that have "owed"(liability) and "paid"(asset) values
-        if (Math.round(groupLiability * 100000000) !== 0) total.balance += groupBalance;
-        total.liability += groupLiability;
-        total.asset += groupAsset;
+        groupBalance += groupOwed - groupPaid;
+        // only count groups that have "owed" and "paid" values
+        if (Math.round(groupOwed * 100000000) !== 0) total.balance += groupBalance;
+        total.owed += groupOwed;
+        total.paid += groupPaid;
       });
       return total;
     },

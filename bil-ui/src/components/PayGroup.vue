@@ -34,22 +34,22 @@
       sm="2"
       class="text-right"
       :class="{
-        'warning--text': totals.liability > 0,
-        'primary--text': totals.liability < 0,
+        'warning--text': totals.owed > 0,
+        'primary--text': totals.owed < 0,
       }"
     >
-      {{totals.liability | currency}}
+      {{totals.owed | currency}}
     </v-col>
     <v-col
       cols="4"
       sm="2"
       class="text-right"
       :class="{
-        'error--text': totals.asset > 0,
-        'success--text': totals.asset < 0,
+        'error--text': totals.paid > 0,
+        'success--text': totals.paid < 0,
       }"
     >
-      {{totals.asset | currency}}
+      {{totals.paid | currency}}
     </v-col>
     <v-col
       v-if="active"
@@ -108,7 +108,7 @@
               class="text-right"
             >
               Owed
-              <div>{{totals.liability | currency}}</div>
+              <div>{{totals.owed | currency}}</div>
             </v-col>
             <v-col
               cols="4"
@@ -116,7 +116,7 @@
               class="text-right"
             >
               Total
-              <div>{{totals.asset | currency}}</div>
+              <div>{{totals.paid | currency}}</div>
             </v-col>
           </v-row>
           <span
@@ -198,20 +198,20 @@ export default {
     },
     totals() {
       const amounts = {
-        liability: 0,
-        asset: 0,
+        owed: 0,
+        paid: 0,
         balance: 0,
       };
       let shouldSetBalance = false;
       this.filteredPayments.forEach((payment) => {
-        amounts.liability += payment.liability;
-        amounts.asset += payment.asset;
-        shouldSetBalance ||= payment.liability !== 0;
+        amounts.owed += payment.owed;
+        amounts.paid += payment.paid;
+        shouldSetBalance ||= payment.owed !== 0;
       });
-      amounts.balance = shouldSetBalance ? amounts.liability - amounts.asset : 0;
+      amounts.balance = shouldSetBalance ? amounts.owed - amounts.paid : 0;
       return {
-        liability: Math.round(10000 * amounts.liability) / 10000,
-        asset: Math.round(10000 * amounts.asset) / 10000,
+        owed: Math.round(10000 * amounts.owed) / 10000,
+        paid: Math.round(10000 * amounts.paid) / 10000,
         balance: Math.round(10000 * amounts.balance) / 10000,
       };
     },
@@ -243,8 +243,8 @@ export default {
       this.activePayment = {
         name: '',
         date,
-        asset: 0,
-        liability: 0,
+        paid: 0,
+        owed: 0,
         currency: lastPaymentCurrency ?? 'CAD',
       };
     },

@@ -71,8 +71,8 @@ class MainService {
   async addPayment(payment) {
     await this.__postData(`/projects/${this.projectId}/paygroups/${this.payGroupId}/payments`, {
       ...payment,
-      asset: Math.round(payment.asset * this.storedCurrencyPrecision),
-      liability: Math.round(payment.liability * this.storedCurrencyPrecision),
+      asset: Math.round(payment.paid * this.storedCurrencyPrecision),
+      liability: Math.round(payment.owed * this.storedCurrencyPrecision),
     });
   }
 
@@ -88,8 +88,8 @@ class MainService {
     const project = await this.__fetchData(`/projects/${projectId}`);
     project.paygroups.forEach((group) => {
       group.payments.forEach((pay) => {
-        pay.asset /= this.storedCurrencyPrecision;
-        pay.liability /= this.storedCurrencyPrecision;
+        pay.paid = pay.asset / this.storedCurrencyPrecision;
+        pay.owed = pay.liability / this.storedCurrencyPrecision;
       });
     });
     this.projectId = projectId;
@@ -107,8 +107,8 @@ class MainService {
   async updatePayment(id, payment) {
     await this.__putData(`/projects/${this.projectId}/paygroups/${this.payGroupId}/payments/${id}`, {
       ...payment,
-      asset: Math.round(payment.asset * this.storedCurrencyPrecision),
-      liability: Math.round(payment.liability * this.storedCurrencyPrecision),
+      asset: Math.round(payment.paid * this.storedCurrencyPrecision),
+      liability: Math.round(payment.owed * this.storedCurrencyPrecision),
     });
   }
 

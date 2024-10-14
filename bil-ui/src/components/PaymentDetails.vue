@@ -24,7 +24,7 @@
                   auto-select-first />
               </v-col>
               <v-col>
-                <v-text-field type="number" v-model="localPayment.liability" label="Owed" inputmode="decimal">
+                <v-text-field type="number" v-model="localPayment.owed" label="Owed" inputmode="decimal">
                   <template
                     v-if="isTouchDevice"
                     v-slot:prepend-inner
@@ -32,14 +32,14 @@
                     <v-icon
                       x-small
                       tabindex="-1"
-                      :class="['fa', localPayment.liability < 0 ? 'fa-plus-circle' : 'fa-minus-circle']"
-                      @click="localPayment.liability = -localPayment.liability"
+                      :class="['fa', localPayment.owed < 0 ? 'fa-plus-circle' : 'fa-minus-circle']"
+                      @click="localPayment.owed = -localPayment.owed"
                     />
                   </template>
                 </v-text-field>
               </v-col>
               <v-col>
-                <v-text-field type="number" v-model="localPayment.asset" label="Paid" inputmode="decimal">
+                <v-text-field type="number" v-model="localPayment.paid" label="Paid" inputmode="decimal">
                   <template
                     v-if="isTouchDevice"
                     v-slot:prepend-inner
@@ -47,8 +47,8 @@
                     <v-icon
                       x-small
                       tabindex="-1"
-                      :class="['fa', localPayment.asset < 0 ? 'fa-plus-circle' : 'fa-minus-circle']"
-                      @click="localPayment.asset = -localPayment.asset"
+                      :class="['fa', localPayment.paid < 0 ? 'fa-plus-circle' : 'fa-minus-circle']"
+                      @click="localPayment.paid = -localPayment.paid"
                       />
                   </template>
                 </v-text-field>
@@ -114,8 +114,8 @@ export default {
       const isDateValid = (new Date(this.localPayment?.date)).toString().toLowerCase() !== 'invalid date';
       return this.localPayment?.name.length > 0
         && isDateValid
-        && !Number.isNaN(parseFloat(this.localPayment?.asset))
-        && !Number.isNaN(parseFloat(this.localPayment?.liability));
+        && !Number.isNaN(parseFloat(this.localPayment?.paid))
+        && !Number.isNaN(parseFloat(this.localPayment?.owed));
     },
     url() {
       const { baseUrl, projectId, payGroupId } = this.service;

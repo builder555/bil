@@ -14,8 +14,8 @@
       <v-icon v-if="localPay.attachment" x-small class="text-right">fa fa-paperclip</v-icon>
     </v-col>
     <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{localPay.date}}</v-col>
-    <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{localPay.liability | currency}}</v-col>
-    <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{localPay.asset | currency}}</v-col>
+    <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{localPay.owed | currency}}</v-col>
+    <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{localPay.paid | currency}}</v-col>
     <div
       class="payrow-hover-buttons"
       :class="{
@@ -23,7 +23,7 @@
       }"
     >
       <v-btn
-        v-show="localPay.liability !== localPay.asset || localPay.changed"
+        v-show="localPay.owed !== localPay.paid || localPay.changed"
         small
         :color="localPay.changed ? 'warning' : 'info'"
         class="mt-1"
@@ -33,7 +33,7 @@
         <v-icon v-else>fas fa-times</v-icon>
       </v-btn>
       <v-btn
-        v-show="localPay.liability !== localPay.asset || localPay.changed"
+        v-show="localPay.owed !== localPay.paid || localPay.changed"
         small
         color="info"
         class="mt-1"
@@ -75,18 +75,18 @@ export default {
   },
   methods: {
     copyPaidToOwed(pay) {
-      pay.originalOwed = pay.liability;
-      pay.liability = pay.asset;
+      pay.originalOwed = pay.owed;
+      pay.owed = pay.paid;
       this.$set(pay, 'changed', true);
     },
     copyOwedToPaid(pay) {
-      pay.originalAmount = pay.asset;
-      pay.asset = pay.liability;
+      pay.originalAmount = pay.paid;
+      pay.paid = pay.owed;
       this.$set(pay, 'changed', true);
     },
     undoCopy(pay) {
-      if (pay.originalOwed !== undefined) pay.liability = pay.originalOwed;
-      if (pay.originalAmount !== undefined) pay.asset = pay.originalAmount;
+      if (pay.originalOwed !== undefined) pay.owed = pay.originalOwed;
+      if (pay.originalAmount !== undefined) pay.paid = pay.originalAmount;
       this.$set(pay, 'changed', false);
     },
     async deletePayment(id) {
