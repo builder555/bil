@@ -49,36 +49,7 @@
             </v-row>
           </v-col>
           <v-col cols="12" sm="6" md="4">
-            <v-card class="px-2">
-              <v-row class="pa-0">
-                <v-col cols="12" class="pb-1 text-center">Group Totals</v-col>
-                <v-col cols="12" class="pt-0"><hr></v-col>
-                <v-col cols="6" class="py-0">Balance: </v-col>
-                <v-col cols="6"
-                  class="text-right py-0"
-                  :class="{
-                    'warning--text': totals.balance > 0,
-                    'primary--text': totals.balance < 0,
-                  }"
-                >{{totals.balance | currency}}</v-col>
-                <v-col cols="6" class="py-0">Owed:</v-col>
-                <v-col cols="6"
-                  class="text-right py-0"
-                  :class="{
-                    'warning--text': totals.owed > 0,
-                    'primary--text': totals.owed < 0,
-                  }"
-                >{{totals.owed | currency}}</v-col>
-                <v-col cols="6" class="py-0">Paid:</v-col>
-                <v-col cols="6"
-                  class="text-right py-0"
-                  :class="{
-                    'error--text': totals.paid > 0,
-                    'success--text': totals.paid < 0,
-                  }"
-                >{{totals.paid | currency}}</v-col>
-              </v-row>
-            </v-card>
+            <GroupTotals :totals="totals" />
           </v-col>
         </v-row>
         <v-row class="ma-0 pa-0 mx-sm-n3">
@@ -146,17 +117,19 @@ import DarkToggle from './components/DarkToggle.vue';
 import NewProject from './components/NewProject.vue';
 import DeleteProject from './components/DeleteProject.vue';
 import NewPaygroup from './components/NewPaygroup.vue';
+import GroupTotals from './components/GroupTotals.vue';
 import { currency } from './assets/constants';
 import Service from './service';
 
 export default {
   name: 'App',
   components: {
-    PayGroup,
     DarkToggle,
-    NewProject,
     DeleteProject,
+    GroupTotals,
     NewPaygroup,
+    NewProject,
+    PayGroup,
   },
   directives: { mask },
   filters: {
