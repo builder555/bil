@@ -115,7 +115,7 @@
               md="2"
               class="text-right"
             >
-              Total
+              Paid
               <div>{{totals.paid | currency}}</div>
             </v-col>
           </v-row>
