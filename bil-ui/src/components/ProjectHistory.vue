@@ -1,6 +1,12 @@
 <template>
   <span>
     <v-icon v-if="project" @click="viewHistory">fa fa-clock-rotate-left</v-icon>
+    <!-- display datetimes for previous states -->
+     <div>
+       <ul>
+        <li v-for="h in history" :key="h.id"> {{ h.date }}</li>
+       </ul>
+     </div>
   </span>
 </template>
 <script>
@@ -11,10 +17,13 @@ export default {
   props: {
     project: null,
   },
+  data: () => ({
+    history: [],
+  }),
   methods: {
     async viewHistory() {
-      const hist = await Service.getProjectHistory(this.project);
-      console.log(hist);
+      this.history = await Service.getProjectHistory(this.project);
+      console.log(this.history);
     },
   },
 };
