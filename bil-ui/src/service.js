@@ -120,6 +120,10 @@ class MainService {
       body: formData,
     });
   }
+
+  async getProjectHistory(projectId) {
+    return this.__fetchData(`/projects/${projectId}/history`);
+  }
 }
 
 export default new MainService();
