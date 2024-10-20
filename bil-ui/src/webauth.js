@@ -1,18 +1,50 @@
-async function register() {
+export function sendAttestationToServer(credential) {
+  // Send the credential to the server for verification and registration
+  console.log('Credential created:', credential);
+  // Implement server communication here
+}
+
+export function sendAssertionToServer(assertion) {
+  console.log('Assertion received:', assertion);
+}
+export async function getMakeCredentialsOptions() {
+  // In a real application, fetch these options from the server
+  return {
+    rp: {
+      name: 'BIL',
+      id: window.location.hostname,
+    },
+    user: {
+      id: window.btoa('unique-user-id'), // how to generate this?
+      name: 'user@example.com', // ask user for this
+      displayName: 'user@example.com', // ask user for this
+    },
+    pubKeyCredParams: [
+      { type: 'public-key', alg: -7 },
+      { type: 'public-key', alg: -257 },
+    ],
+    authenticatorSelection: {
+      authenticatorAttachment: 'platform',
+      requireResidentKey: false,
+      userVerification: 'preferred',
+    },
+    attestation: 'direct',
+    timeout: 60000,
+    challenge: window.btoa('random-challenge-string'), // how to generate this?
+  };
+}
+
+export async function register() {
   // Fetch options from the server
   const options = await getMakeCredentialsOptions();
 
-  options.user.id = Uint8Array.from(window.atob(options.user.id), (c) =>
-    c.charCodeAt(0)
-  );
-  options.challenge = Uint8Array.from(window.atob(options.challenge), (c) =>
-    c.charCodeAt(0)
-  );
+  options.user.id = Uint8Array.from(window.atob(options.user.id), (c) => c.charCodeAt(0));
+  options.challenge = Uint8Array.from(window.atob(options.challenge), (c) => c.charCodeAt(0));
 
   if (options.excludeCredentials) {
-    for (let cred of options.excludeCredentials) {
+    options.excludeCredentials.forEach((cred) => {
       cred.id = Uint8Array.from(window.atob(cred.id), (c) => c.charCodeAt(0));
-    }
+    });
   }
 
   // Create a new credential
@@ -26,20 +58,33 @@ async function register() {
       console.error(err);
     });
 }
+export async function getGetAssertionOptions() {
+  // In a real application, fetch these options from your server
+  return {
+    challenge: window.btoa('random-challenge-string'),
+    allowCredentials: [
+      {
+        type: 'public-key',
+        id: window.btoa('existing-credential-id'),
+        transports: ['internal'],
+      },
+    ],
+    userVerification: 'preferred',
+    timeout: 60000,
+  };
+}
 
-async function login() {
+export async function login() {
   // Fetch options from the server
   const options = await getGetAssertionOptions();
 
   // Convert base64 strings to ArrayBuffers
-  options.challenge = Uint8Array.from(window.atob(options.challenge), (c) =>
-    c.charCodeAt(0)
-  );
+  options.challenge = Uint8Array.from(window.atob(options.challenge), (c) => c.charCodeAt(0));
 
   if (options.allowCredentials) {
-    for (let cred of options.allowCredentials) {
+    options.allowCredentials.forEach((cred) => {
       cred.id = Uint8Array.from(window.atob(cred.id), (c) => c.charCodeAt(0));
-    }
+    });
   }
 
   // Get an assertion
@@ -54,62 +99,6 @@ async function login() {
     });
 }
 
-async function getMakeCredentialsOptions() {
-  // In a real application, fetch these options from the server
-  return {
-    rp: {
-      name: "BIL",
-      id: window.location.hostname,
-    },
-    user: {
-      id: window.btoa("unique-user-id"), // how to generate this?
-      name: "user@example.com", // ask user for this
-      displayName: "user@example.com", //ask user for this
-    },
-    pubKeyCredParams: [
-      { type: "public-key", alg: -7 },
-      { type: "public-key", alg: -257 },
-    ],
-    authenticatorSelection: {
-      authenticatorAttachment: "platform",
-      requireResidentKey: false,
-      userVerification: "preferred",
-    },
-    attestation: "direct",
-    timeout: 60000,
-    challenge: window.btoa("random-challenge-string"), // how to generate this?
-  };
-}
-
-async function getGetAssertionOptions() {
-  // In a real application, fetch these options from your server
-  return {
-    challenge: window.btoa("random-challenge-string"),
-    allowCredentials: [
-      {
-        type: "public-key",
-        id: window.btoa("existing-credential-id"),
-        transports: ["internal"],
-      },
-    ],
-    userVerification: "preferred",
-    timeout: 60000,
-  };
-}
-
-function sendAttestationToServer(credential) {
-  // Send the credential to the server for verification and registration
-  console.log("Credential created:", credential);
-  // Implement server communication here
-}
-
-function sendAssertionToServer(assertion) {
-  console.log("Assertion received:", assertion);
-}
-
-const isBiometricAvailable =
-  await window?.PublicKeyCredential?.isUserVerifyingPlatformAuthenticatorAvailable();
-if (!isBiometricAvailable) {
-  console.log("Biometrics not available!!");
-  return;
+export async function isBiometricAvailable() {
+  return window?.PublicKeyCredential?.isUserVerifyingPlatformAuthenticatorAvailable();
 }
