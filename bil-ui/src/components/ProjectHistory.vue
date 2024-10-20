@@ -1,12 +1,28 @@
 <template>
   <span>
-    <v-icon v-if="project" @click="viewHistory">fa fa-clock-rotate-left</v-icon>
-    <!-- display datetimes for previous states -->
-     <div>
-       <ul>
-        <li v-for="h in history" :key="h.id"> {{ h.date }}</li>
-       </ul>
-     </div>
+    <v-icon
+      v-if="project"
+      @click="viewHistory"
+    >fa fa-clock-rotate-left</v-icon>
+    <v-dialog
+      v-if="history.length"
+      max-width="400"
+      v-model="isOpen"
+    >
+      <v-card>
+        <v-card-title class="headline">Pick a checkpoint to view</v-card-title>
+        <v-card-text>
+          <v-timeline dense>
+            <v-timeline-item v-for="h in history" :key="h.id">
+              {{ h.date }}
+            </v-timeline-item>
+          </v-timeline>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </span>
 </template>
 <script>
@@ -19,11 +35,12 @@ export default {
   },
   data: () => ({
     history: [],
+    isOpen: false,
   }),
   methods: {
     async viewHistory() {
+      this.isOpen = true;
       this.history = await Service.getProjectHistory(this.project);
-      console.log(this.history);
     },
   },
 };
