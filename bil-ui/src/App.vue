@@ -177,10 +177,10 @@ export default {
       }
 
       filteredGroups.forEach((group) => {
-        if (this.searchStartDate.length >= 10) {
+        if (this.searchStartDate?.length >= 10) {
           group.payments = group.payments.filter((pay) => new Date(pay.date) >= new Date(this.searchStartDate));
         }
-        if (this.searchEndDate.length >= 10) {
+        if (this.searchEndDate?.length >= 10) {
           group.payments = group.payments.filter((pay) => new Date(pay.date) <= new Date(this.searchEndDate));
         }
         if (this.paymentSearch) {
