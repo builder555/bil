@@ -11,10 +11,10 @@ Stores database in json files, each project is a git repo, allowing you to undo 
 - [x] mobile-friendly
 - [x] receipt attachments
 - [x] friendly API (swagger)
+- [x] view of past states
 
 ### Wishlist
-- [x] view of past states
-- [ ] roll back to a previous state
+- [ ] read-only mode when viewing past states
 - [ ] passcode authentication
 - [ ] calendar view for date inputs
 - [ ] migrations for database changes preserving rollback
