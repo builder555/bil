@@ -69,7 +69,7 @@ async def delete_project(project_id: int, db=Depends(get_db)):
 
 
 @app.put("/projects/{project_id}/restore")
-async def restore_project(project_id: int, db=Depends(get_db)):
+async def restore_deleted_project(project_id: int, db=Depends(get_db)):
     try:
         return db.restore_project(project_id)
     except ItemNotFoundError:
