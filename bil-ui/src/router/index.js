@@ -5,7 +5,7 @@ Vue.use(VueRouter);
 
 const routes = [
   {
-    path: '/:id?',
+    path: '/:id?/:state?',
     name: 'Home',
   },
 ];

@@ -47,6 +47,11 @@
                 />
               </v-col>
             </v-row>
+            <v-row class="ma-0 pa-0">
+              <v-col cols="12" class="ma-0 pa-0">
+                <ProjectHistory :project="project"/>
+              </v-col>
+            </v-row>
           </v-col>
           <v-col cols="12" sm="6" md="4">
             <GroupTotals :totals="totals" />
@@ -118,6 +123,7 @@ import NewProject from './components/NewProject.vue';
 import DeleteProject from './components/DeleteProject.vue';
 import NewPaygroup from './components/NewPaygroup.vue';
 import GroupTotals from './components/GroupTotals.vue';
+import ProjectHistory from './components/ProjectHistory.vue';
 import { currency } from './assets/constants';
 import Service from './service';
 
@@ -130,6 +136,7 @@ export default {
     NewPaygroup,
     NewProject,
     PayGroup,
+    ProjectHistory,
   },
   directives: { mask },
   filters: {
@@ -137,6 +144,7 @@ export default {
   },
   data: () => ({
     activeGroup: -1,
+    historyState: null,
     project: null,
     projects: [],
     rawGroups: [],
@@ -155,6 +163,12 @@ export default {
         this.$router.push({ params: { id: this.project } });
       }
     },
+    historyState() {
+      this.getGroups();
+      if (+this.$route.params.state !== this.historyState) {
+        this.$router.push({ params: { state: this.historyState } });
+      }
+    },
     groupSearch() {
       this.activeGroup = -1;
     },
@@ -162,6 +176,12 @@ export default {
       immediate: true,
       handler() {
         this.project = +this.$route.params.id;
+      },
+    },
+    '$route.params.state': {
+      immediate: true,
+      handler() {
+        this.historyState = this.$route.params.state;
       },
     },
   },
@@ -228,7 +248,7 @@ export default {
         this.rawGroups = [];
         return;
       }
-      const details = await this.service.getProjectDetails(this.project);
+      const details = await this.service.getProjectDetails(this.project, this.historyState);
       this.rawGroups = details.paygroups;
     },
     async getProjects() {

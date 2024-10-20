@@ -13,7 +13,7 @@ Stores database in json files, each project is a git repo, allowing you to undo 
 - [x] friendly API (swagger)
 
 ### Wishlist
-- [ ] time machine-like view of past states
+- [x] view of past states
 - [ ] roll back to a previous state
 - [ ] passcode authentication
 - [ ] calendar view for date inputs

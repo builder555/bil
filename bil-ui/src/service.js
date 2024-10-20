@@ -84,8 +84,13 @@ class MainService {
     this.payGroupId = groupId;
   }
 
-  async getProjectDetails(projectId) {
-    const project = await this.__fetchData(`/projects/${projectId}`);
+  async getProjectDetails(projectId, historyState = null) {
+    let project;
+    if (historyState) {
+      project = await this.__fetchData(`/projects/${projectId}/history/${historyState}`);
+    } else {
+      project = await this.__fetchData(`/projects/${projectId}`);
+    }
     project.paygroups.forEach((group) => {
       group.payments.forEach((pay) => {
         pay.paid = pay.asset / this.storedCurrencyPrecision;
