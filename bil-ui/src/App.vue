@@ -165,9 +165,6 @@ export default {
     },
     historyState() {
       this.getGroups();
-      if (+this.$route.params.state !== this.historyState) {
-        this.$router.push({ params: { state: this.historyState } });
-      }
     },
     groupSearch() {
       this.activeGroup = -1;
