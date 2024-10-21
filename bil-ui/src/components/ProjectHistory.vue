@@ -6,7 +6,7 @@
     >fa fa-clock-rotate-left</v-icon>
     <v-dialog
       v-if="history.length"
-      max-width="400"
+      max-width="430"
       v-model="isOpen"
       scrollable
     >
@@ -24,14 +24,13 @@
             <v-timeline-item
               v-for="h in formattedHistory"
               :key="h.state"
-              :class="$route.params.state === h.state ? 'active' : ''"
+              :icon="$route.params.state == h.state ? 'fa fa-caret-right' : ''"
             >
-              <router-link
-                :disabled="$route.params.state === h.state"
-                :to="{name: 'Home', params: {id: project, state: h.state}}"
-              >
-                {{h.displayText}}
-              </router-link>
+              <v-btn
+                @click="$router.push({params: {id: project, state: h.state}})"
+                small
+                :color="$route.params.state == h.state ? 'primary' : 'default'"
+              >{{h.displayText}}</v-btn>
             </v-timeline-item>
           </v-timeline>
         </v-card-text>
