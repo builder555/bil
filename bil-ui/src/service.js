@@ -10,9 +10,15 @@ class MainService {
     this.projectId = null;
     this.payGroupId = null;
     this.storedCurrencyPrecision = 100000000;
+    this.__isReadOnly = false;
+  }
+
+  get isReadOnly() {
+    return this.__isReadOnly;
   }
 
   async __deleteData(url) {
+    if (this.isReadOnly) return;
     return fetch(`${this.baseUrl}${url}`, {
       method: 'DELETE',
     });
@@ -25,6 +31,7 @@ class MainService {
   }
 
   async __postData(url, data = {}) {
+    if (this.isReadOnly) return;
     const request = new Request(`${this.baseUrl}${url}`, {
       method: 'POST',
       headers: {
@@ -37,6 +44,7 @@ class MainService {
   }
 
   async __putData(url, data = {}) {
+    if (this.isReadOnly) return;
     const request = new Request(`${this.baseUrl}${url}`, {
       method: 'PUT',
       headers: {
@@ -88,8 +96,10 @@ class MainService {
     let project;
     if (historyState) {
       project = await this.__fetchData(`/projects/${projectId}/history/${historyState}`);
+      this.__isReadOnly = true;
     } else {
       project = await this.__fetchData(`/projects/${projectId}`);
+      this.__isReadOnly = false;
     }
     project.paygroups.forEach((group) => {
       group.payments.forEach((pay) => {
@@ -118,6 +128,7 @@ class MainService {
   }
 
   async uploadFile(id, file) {
+    if (this.isReadOnly) return;
     const formData = new FormData();
     formData.append('file', file);
     await fetch(`${this.baseUrl}/projects/${this.projectId}/paygroups/${this.payGroupId}/payments/${id}/files`, {

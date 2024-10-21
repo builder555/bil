@@ -72,6 +72,7 @@
                 icon
                 title="Delete group"
                 color="error"
+                :disabled="service.isReadOnly"
                 @click="deleteGroup"
               >
                 <v-icon> fa fa-trash-alt </v-icon>
@@ -90,6 +91,7 @@
                 small
                 color="success"
                 class="ml-5 mr-2"
+                :disabled="service.isReadOnly"
                 @click="newPayment"
               >
                 <v-icon>fa fa-plus</v-icon>
@@ -125,6 +127,7 @@
           >
             <PaymentRow
               :pay="pay"
+              :disabled="service.isReadOnly"
               @save="savePay"
               @delete="deletePay"
               @setActivePayment="(pay) => activePayment = pay"
@@ -218,6 +221,7 @@ export default {
   },
   methods: {
     toggleEditName(event) {
+      if (this.service.isReadOnly) return;
       if (this.groupName) {
         event.stopPropagation();
         this.editingName = true;

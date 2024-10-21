@@ -11,12 +11,17 @@
     <v-col cols="12" md="6" class="text-left py-2">
       <v-chip x-small class="px-1">{{localPay.currency}}</v-chip>
       {{localPay.name}}
-      <v-icon v-if="localPay.attachment" x-small class="text-right">fa fa-paperclip</v-icon>
+      <v-icon
+        v-if="localPay.attachment"
+        x-small
+        class="text-right"
+      >fa fa-paperclip</v-icon>
     </v-col>
     <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{localPay.date}}</v-col>
     <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{localPay.owed | currency}}</v-col>
     <v-col cols="4" md="2" class="text-right py-0 py-md-2">{{localPay.paid | currency}}</v-col>
     <div
+      v-if="!disabled"
       class="payrow-hover-buttons"
       :class="{
         'd-block': localPay.isTrashVisible
@@ -58,7 +63,7 @@
 import { currency } from '@/assets/constants';
 
 export default {
-  props: ['pay'],
+  props: ['pay', 'disabled'],
   filters: {
     currency,
   },
@@ -99,9 +104,11 @@ export default {
       this.$emit('save', payment);
     },
     toggleEdit(pay) {
+      if (this.disabled) return;
       this.$emit('setActivePayment', JSON.parse(JSON.stringify(pay)));
     },
     toggleDelete(pay, isVisible) {
+      if (this.disabled) return;
       this.$set(pay, 'isTrashVisible', isVisible);
     },
   },

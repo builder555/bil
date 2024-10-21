@@ -4,6 +4,7 @@
       small
       color="success"
       class="ml-5 mr-2"
+      :disabled="service.isReadOnly"
       @click="isOpen=true"
     >
       <v-icon>fa fa-plus</v-icon>
