@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bil"
-version = "0.30.9"
+version = "0.30.10"
 description = "Personal finance tracking system api"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
