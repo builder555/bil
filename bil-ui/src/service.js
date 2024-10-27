@@ -18,7 +18,7 @@ class MainService {
   }
 
   async __deleteData(url) {
-    if (this.isReadOnly) return;
+    if (this.isReadOnly) return Promise.resolve();
     return fetch(`${this.baseUrl}${url}`, {
       method: 'DELETE',
     });
@@ -31,7 +31,7 @@ class MainService {
   }
 
   async __postData(url, data = {}) {
-    if (this.isReadOnly) return;
+    if (this.isReadOnly) return Promise.resolve();
     const request = new Request(`${this.baseUrl}${url}`, {
       method: 'POST',
       headers: {
@@ -44,7 +44,7 @@ class MainService {
   }
 
   async __putData(url, data = {}) {
-    if (this.isReadOnly) return;
+    if (this.isReadOnly) return Promise.resolve();
     const request = new Request(`${this.baseUrl}${url}`, {
       method: 'PUT',
       headers: {
