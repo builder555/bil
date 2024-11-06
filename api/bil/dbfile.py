@@ -78,7 +78,7 @@ class DBAdaptor:
     def _save_paygroups(self, project_id: int, paygroups: dict[int, Paygroup]):
         payfile_path = self._get_payfile_path(project_id)
         with open(payfile_path, "w") as f:
-            json.dump(paygroups, f, cls=ProjectEncoder)
+            json.dump(paygroups, f, cls=ProjectEncoder, indent=2)
         self.__repo_commit(project_id)
 
     def _get_paygroups_dict(self, project_id: int) -> dict[int, Paygroup]:
