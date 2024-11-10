@@ -14,6 +14,7 @@ Stores database in json files, each project is a git repo, allowing you to undo 
 - [x] view of past states
 
 ### Wishlist
+- [ ] add tags and by-tag filtering
 - [ ] read-only mode when viewing past states
 - [ ] passcode authentication
 - [ ] calendar view for date inputs
