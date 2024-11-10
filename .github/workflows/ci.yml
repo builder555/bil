@@ -44,7 +44,7 @@ jobs:
         run: poetry run flake8
 
   build-and-release:
-    needs: semver-action
+    needs: [semver-action, test-and-lint]
     runs-on: ubuntu-latest
     if: needs.semver-action.outputs.version != ''
     steps:
