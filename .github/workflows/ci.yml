@@ -12,26 +12,22 @@ jobs:
       run:
         working-directory: ./api
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Install dependencies
-      run: |
-        pip install poetry
-        poetry install
-
-    - name: Run pytest
-      run: |
-        git config --global user.name "bil" 
-        git config --global user.email "bil@bil.local"
-        poetry run pytest
-
-    - name: Run flake8
-      run: poetry run flake8
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+      - name: Run pytest
+        run: |
+          git config --global user.name "bil" 
+          git config --global user.email "bil@bil.local"
+          poetry run pytest
+      - name: Run flake8
+        run: poetry run flake8
 
   semver-action:
     needs: test-and-lint
@@ -39,84 +35,75 @@ jobs:
       version: ${{ steps.semver-action.outputs.version }}
       release-notes: ${{ steps.semver-action.outputs.release-notes }}
     runs-on: ubuntu-latest
-
     steps:
-    - name: Semver Action
-      id: semver-action
-      uses: builder555/simple-semver@v3
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-  
+      - name: Semver Action
+        id: semver-action
+        uses: builder555/simple-semver@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
   build-and-release:
     needs: semver-action
     runs-on: ubuntu-latest
     if: needs.semver-action.outputs.version != ''
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Update version in pyproject.toml
-      run: |
-        cd api
-        pip install poetry
-        poetry version ${{ needs.semver-action.outputs.version }}
-        cd ..
-
-    - name: Set up Node.js 16
-      uses: actions/setup-node@v4
-      with:
-        node-version: '16'
-
-    - name: Build UI
-      run: |
-        cd bil-ui
-        yarn
-        yarn build
-        cd ..
-    - name: Prepare API for docker build
-      run: |
-        cd api 
-        pip install poetry
-        poetry export --format=requirements.txt --output=requirements.txt --without-hashes --without dev
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: builder555
-        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-  
-    - name: Build and push multi-platform Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: builder555/bil:latest
-        platforms: linux/amd64,linux/arm64,linux/arm/v7
-
-    - name: Commit version changes
-      run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git add api/pyproject.toml
-        git commit -m "chore: bump version to v${{ needs.semver-action.outputs.version }}"
-        git tag v${{ needs.semver-action.outputs.version }}
-    
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ github.ref }}
-        tags: true
-    
-    - name: Create Release
-      id: create-release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: v${{ needs.semver-action.outputs.version }}
-        body: ${{ needs.semver-action.outputs.release-notes }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Update version in pyproject.toml
+        run: |
+          cd api
+          pip install poetry
+          poetry version ${{ needs.semver-action.outputs.version }}
+          cd ..
+      - name: Set up Node.js 16
+        uses: actions/setup-node@v4
+        with:
+          node-version: "16"
+      - name: Build UI
+        run: |
+          cd bil-ui
+          yarn
+          yarn build
+          cd ..
+      - name: Prepare API for docker build
+        run: |
+          cd api 
+          pip install poetry
+          poetry export --format=requirements.txt --output=requirements.txt --without-hashes --without dev
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: builder555
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push multi-platform Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: builder555/bil:latest
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+      - name: Commit version changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add api/pyproject.toml
+          git commit -m "chore: bump version to v${{ needs.semver-action.outputs.version }}"
+          git tag v${{ needs.semver-action.outputs.version }}
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+          tags: true
+      - name: Create Release
+        id: create-release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.semver-action.outputs.version }}
+          body: ${{ needs.semver-action.outputs.release-notes }}
