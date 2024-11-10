@@ -6,7 +6,21 @@ on:
       - master
 
 jobs:
+  semver-action:
+    outputs:
+      version: ${{ steps.semver-action.outputs.version }}
+      release-notes: ${{ steps.semver-action.outputs.release-notes }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Semver Action
+        id: semver-action
+        uses: builder555/simple-semver@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
   test-and-lint:
+    needs: semver-action
+    if: needs.semver-action.outputs.version != ''
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -28,19 +42,6 @@ jobs:
           poetry run pytest
       - name: Run flake8
         run: poetry run flake8
-
-  semver-action:
-    needs: test-and-lint
-    outputs:
-      version: ${{ steps.semver-action.outputs.version }}
-      release-notes: ${{ steps.semver-action.outputs.release-notes }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Semver Action
-        id: semver-action
-        uses: builder555/simple-semver@v3
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-release:
     needs: semver-action
