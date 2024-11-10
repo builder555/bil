@@ -21,8 +21,34 @@ Stores database in json files, each project is a git repo, allowing you to undo 
 
 ### Run
 
+#### Directly from command line
+
 ```bash
 docker run -v ./data:/app/data -p 8000:8000 builder555/bil
+```
+
+Navigate to http://localhost:8000
+
+#### Or using docker-compose
+
+Create a compose.yml file:
+
+```yaml
+services:
+  main:
+    image: builder555/bil:latest
+    container_name: bil
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+```
+
+Start:
+
+```bash
+docker compose up -d
 ```
 
 Navigate to http://localhost:8000
