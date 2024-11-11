@@ -89,3 +89,22 @@ def client_with_payment(client_with_paygroup, mock_payment) -> tuple[TestClient,
     resp = client.post(f"/projects/{project_id}/paygroups/{group_id}/payments", json=mock_payment)
     pay_id = resp.json()["id"]
     return client, project_id, group_id, pay_id
+
+
+@pytest.fixture
+def mocked_tags() -> list[dict]:
+    return [
+        {"name": "tag1", "color": "red"},
+        {"name": "tag2", "color": "blue"},
+        {"name": "tag3", "color": "green"},
+    ]
+
+
+@pytest.fixture
+def client_with_tags(client_with_paygroup, mock_payment, mocked_tags) -> tuple[TestClient, int, int]:
+    client, project_id, group_id = client_with_paygroup
+    mock_payment["tags"] = mocked_tags[0:2]
+    client.post(f"/projects/{project_id}/paygroups/{group_id}/payments", json=mock_payment)
+    mock_payment["tags"] = mocked_tags[2:3]
+    client.post(f"/projects/{project_id}/paygroups/{group_id}/payments", json=mock_payment)
+    return client, project_id, group_id

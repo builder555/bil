@@ -1,4 +1,4 @@
-from bil.datamodels import Payment, PaymentInput, Paygroup, Project, ProjectEncoder, ProjectWithPayments
+from bil.datamodels import Payment, PaymentInput, Paygroup, Project, ProjectEncoder, ProjectWithPayments, TagModel
 import os
 import shutil
 import json
@@ -158,6 +158,15 @@ class DBAdaptor:
             raise ItemNotFoundError
         projects[project_id].name = name
         self._save_projects(projects)
+
+    def get_tags(self, project_id: int) -> list[TagModel]:
+        project = self.get_project(project_id)
+        tags = []
+        for group in project.paygroups:
+            for payment in group.payments:
+                if payment.tags:
+                    tags.extend(payment.tags)
+        return tags
 
     def add_paygroup(self, project_id: int, name: str) -> int:
         paygroups = self._get_paygroups_dict(project_id)

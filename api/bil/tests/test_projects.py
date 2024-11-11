@@ -75,6 +75,13 @@ def test_get_project_at_previous_state(client_with_paygroup, paygroup_name):
     assert paygroups[0]["name"] == paygroup_name
 
 
+def test_can_get_all_tags_from_project(client_with_tags, mocked_tags):
+    client, project_id, _ = client_with_tags
+    resp = client.get(f"/projects/{project_id}/tags")
+    assert resp.status_code == 200
+    assert resp.json() == mocked_tags
+
+
 def test_getting_projects_from_blank_db_returns_empty_list(client):
     response = client.get("/projects")
     assert response.status_code == 200
