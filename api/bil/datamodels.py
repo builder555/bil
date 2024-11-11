@@ -29,7 +29,7 @@ class PaygroupInput(BaseModel):
 
 class Paygroup(PaygroupInput):
     id: int
-    payments: Optional[list[Payment]] = []
+    payments: list[Payment] = []
 
 
 class ProjectInput(BaseModel):
