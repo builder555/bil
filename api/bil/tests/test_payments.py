@@ -99,6 +99,23 @@ def test_can_remove_files_from_payment(client_with_payment, small_pdf):
     assert not project_resp["paygroups"][0]["payments"][0]["attachment"]
 
 
+def test_can_add_tags_to_payment(client_with_payment):
+    client, project_id, group_id, pay_id = client_with_payment
+    updated_project = client.get(f"/projects/{project_id}")
+    existing_payment = updated_project.json()["paygroups"][0]["payments"][0]
+    random_number = random.randint(0, 1000)
+    tags = [{"name": f"tag {random_number}", "color": "red"}]
+    updated_payment = {**existing_payment, "tags": tags}
+    update_payments_resp = client.put(
+        f"/projects/{project_id}/paygroups/{group_id}/payments/{pay_id}", json=updated_payment
+    )
+    updated_project = client.get(f"/projects/{project_id}")
+    payment = updated_project.json()["paygroups"][0]["payments"][0]
+    assert update_payments_resp.status_code == 200
+    assert payment["tags"][0]["name"] == tags[0]["name"]
+    assert payment["tags"][0]["color"] == tags[0]["color"]
+
+
 def test_cannot_add_payment_to_nonexistent_paygroup(client_with_project, mock_payment):
     client, project_id = client_with_project
     resp = client.post(f"/projects/{project_id}/paygroups/42/payments", json=mock_payment)

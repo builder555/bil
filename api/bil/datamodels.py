@@ -4,12 +4,18 @@ from pydantic import BaseModel, Field
 import json
 
 
+class TagModel(BaseModel):
+    name: str
+    color: str
+
+
 class PaymentInput(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     date: date
     asset: Optional[int] = Field(default=0, description="Amount in microcents")
     liability: Optional[int] = Field(default=0, description="Amount in microcents")
     currency: str = Field(min_length=1, max_length=3, json_schema_extra={"example": "USD"})
+    tags: Optional[list[TagModel]] = Field(default_factory=list)
 
 
 class Payment(PaymentInput):
