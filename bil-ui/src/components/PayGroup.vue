@@ -186,7 +186,8 @@ export default {
     },
     filteredPayments() {
       if (this.paymentSearch) {
-        const regex = new RegExp(`(?<![A-Za-z])${this.paymentSearch}`, 'gi');
+        const escapedSearch = this.paymentSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(?<![A-Za-z])${escapedSearch}`, 'gi');
         return this.payments.filter((pay) => !!pay.name?.match(regex));
       }
       return this.payments;

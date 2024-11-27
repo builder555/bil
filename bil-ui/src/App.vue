@@ -186,7 +186,8 @@ export default {
     groups() {
       let filteredGroups = JSON.parse(JSON.stringify(this.rawGroups));
       if (this.groupSearch) {
-        const regex = new RegExp(`(?<![A-Za-z])${this.groupSearch}`, 'gi');
+        const escapedSearch = this.groupSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(?<![A-Za-z])${escapedSearch}`, 'gi');
         filteredGroups = filteredGroups.filter((g) => !!g.name?.match(regex));
       }
       if (this.searchStartDate || this.searchEndDate || this.paymentSearch) {
@@ -201,7 +202,8 @@ export default {
           group.payments = group.payments.filter((pay) => new Date(pay.date) <= new Date(this.searchEndDate));
         }
         if (this.paymentSearch) {
-          const regex = new RegExp(`(?<![A-Za-z])${this.paymentSearch}`, 'gi');
+          const escapedSearch = this.paymentSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`(?<![A-Za-z])${escapedSearch}`, 'gi');
           group.payments = group.payments.filter((pay) => !!pay.name?.match(regex));
         }
       });
