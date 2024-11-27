@@ -12,13 +12,15 @@ Stores database in json files, each project is a git repo, allowing you to undo 
 - [x] receipt attachments
 - [x] friendly API (swagger)
 - [x] view of past states
+- [x] read-only mode when viewing past states
 
 ### Wishlist
+- [ ] upgrade to vue3
 - [ ] add tags and by-tag filtering
-- [ ] read-only mode when viewing past states
 - [ ] passcode authentication
 - [ ] calendar view for date inputs
 - [ ] migrations for database changes preserving rollback
+- [ ] CSV group export
 
 ### Run
 
